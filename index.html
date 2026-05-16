@@ -1,10 +1,16 @@
+
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-bs-theme="dark">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SkyMixer</title>
+  <!-- Bootstrap 5.3.8 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -27,24 +33,73 @@
       --font: 'Inter', sans-serif;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    button,
+    select,
+    input {
+      font-family: inherit;
+    }
+
+    .text-mono {
+      font-family: 'Courier New', monospace;
+    }
+
+    .fx-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .modal-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .modal-option-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .modal-info-box {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .loading-text {
+      color: var(--text-muted);
+      margin-top: 16px;
+      font-size: 14px;
     }
 
     body {
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
-      /* DAW Layout: Body is full window, inner elements scroll */
       height: 100vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    /* Prevent static top panels from shrinking */
+    /* Bootstrap Modal viewport fix: body flex layout を無視して常にビューポート中央に表示 */
+    .modal {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 1055;
+      overflow-y: auto !important;
+    }
+
+    .modal-backdrop {
+      position: fixed !important;
+      inset: 0 !important;
+    }
+
     .header,
     .fx-panel,
     .transport,
@@ -52,7 +107,7 @@
       flex-shrink: 0;
     }
 
-    /* ===== HEADER (with upload + file info + exports) ===== */
+    /* ===== HEADER ===== */
     .header {
       display: flex;
       align-items: center;
@@ -64,143 +119,113 @@
       z-index: 100;
       flex-shrink: 0;
       flex-wrap: wrap;
-    }
 
-    .header-brand {
-      display: flex;
-      flex-direction: column;
-      margin-right: 8px;
-      flex-shrink: 0;
-    }
+      .header-brand {
+        display: flex;
+        flex-direction: column;
+        margin-right: 8px;
+        flex-shrink: 0;
 
-    .header-brand h1 {
-      font-size: 18px;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      line-height: 1.2;
-    }
+        h1 {
+          background: linear-gradient(135deg, var(--accent), var(--accent2));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          line-height: 1.2;
+        }
 
-    .header-brand .subtitle {
-      font-size: 10px;
-      color: var(--text-muted);
-    }
+        .subtitle {
+          font-size: 10px;
+          color: var(--text-muted);
+        }
+      }
 
-    /* Compact upload button in header */
-    .header-upload {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      padding: 6px 14px;
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      background: var(--bg-input);
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
+      .header-upload {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 8px 16px;
+        border: 2px dashed var(--accent);
+        border-radius: 8px;
+        background: rgba(124, 58, 237, 0.08);
+        transition: all 0.2s;
+        flex-shrink: 0;
 
-    .header-upload:hover,
-    .header-upload.dragover {
-      border-color: var(--accent);
-      background: rgba(124, 58, 237, 0.1);
-      box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
-    }
+        &:hover,
+        &.dragover {
+          border-color: var(--accent2);
+          background: rgba(124, 58, 237, 0.18);
+          box-shadow: 0 0 14px rgba(124, 58, 237, 0.4);
+          transform: scale(1.03);
+        }
 
-    .header-upload .upload-icon {
-      font-size: 16px;
-    }
+        .upload-icon {
+          font-size: 18px;
+          color: var(--accent2);
+        }
 
-    .header-upload .upload-text {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
+        .upload-text {
+          font-size: 12px;
+          color: var(--accent2);
+          font-weight: 600;
+        }
 
-    .header-upload input {
-      display: none;
-    }
+        input {
+          display: none;
+        }
+      }
 
-    /* File info in header */
-    .header-file-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-    }
+      .header-file-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
 
-    .header-file-info .file-name {
-      font-weight: 600;
-      font-size: 13px;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 200px;
-    }
+        .file-name {
+          font-weight: 600;
+          font-size: 13px;
+          color: var(--text);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 200px;
+        }
 
-    .header-file-info .file-meta {
-      display: flex;
-      gap: 8px;
-      font-size: 10px;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
+        .file-meta {
+          display: flex;
+          gap: 8px;
+          font-size: 10px;
+          color: var(--text-muted);
+          white-space: nowrap;
 
-    .header-file-info .file-meta span {
-      padding: 2px 6px;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 4px;
-    }
+          span {
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 4px;
+          }
+        }
+      }
 
-    /* Export buttons in header */
-    .header-actions {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-shrink: 0;
-    }
-
-    .header-actions .export-btn {
-      font-size: 11px;
-      padding: 5px 10px;
-      border-radius: 6px;
-      border: 1px solid var(--green);
-      background: transparent;
-      color: var(--green);
-      cursor: pointer;
-      font-family: var(--font);
-      font-weight: 600;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .header-actions .export-btn:hover {
-      background: rgba(34, 197, 94, 0.15);
-    }
-
-    .header-actions .export-btn.wav-btn {
-      border-color: var(--cyan);
-      color: var(--cyan);
-    }
-
-    .header-actions .export-btn.wav-btn:hover {
-      background: rgba(6, 182, 212, 0.15);
+      .header-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-shrink: 0;
+      }
     }
 
     .file-info .meta {
       color: var(--text-muted);
       font-size: 13px;
+
+      span {
+        margin-left: 16px;
+      }
     }
 
-    .file-info .meta span {
-      margin-left: 16px;
-    }
-
-    /* Transport */
+    /* ===== TRANSPORT ===== */
     .transport {
       margin: 0;
       display: flex;
@@ -210,10 +235,72 @@
       background: var(--bg-card);
       border-bottom: 1px solid var(--border);
       padding: 6px 16px;
-    }
 
-    .transport.visible {
-      display: flex;
+      &.visible {
+        display: flex;
+      }
+
+      button:not(.btn) {
+        background: none;
+        border: none;
+        color: var(--text);
+        font-size: 24px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: background 0.2s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        &.active {
+          color: var(--green);
+        }
+
+        &.loop-active {
+          background: rgba(34, 197, 94, 0.2);
+          border: 2px solid var(--green);
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+          transform: scale(1.15);
+        }
+      }
+
+      .time {
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        color: var(--accent2);
+        min-width: 80px;
+      }
+
+      .progress-bar {
+        flex: 1;
+        height: 6px;
+        background: var(--bg-input);
+        border-radius: 3px;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        border-radius: 3px;
+        width: 0%;
+        transition: width 0.1s;
+      }
+
+      .progress-range-highlight {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        background: rgba(124, 58, 237, 0.3);
+        border-radius: 3px;
+        pointer-events: none;
+      }
+
+
     }
 
     .transport-row1 {
@@ -223,41 +310,6 @@
       width: 100%;
     }
 
-    .transport button {
-      background: none;
-      border: none;
-      color: var(--text);
-      font-size: 24px;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 8px;
-      transition: background 0.2s;
-    }
-
-    .transport button:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .transport button.active {
-      color: var(--green);
-    }
-
-    .transport button.loop-active {
-      background: rgba(34, 197, 94, 0.2);
-      border: 2px solid var(--green);
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
-      transform: scale(1.15);
-    }
-
-    .transport .time {
-      font-family: 'Courier New', monospace;
-      font-size: 16px;
-      color: var(--accent2);
-      min-width: 80px;
-    }
-
-    /* Bar:Beat position display */
     .bar-beat-display {
       display: flex;
       align-items: baseline;
@@ -269,53 +321,27 @@
       border-radius: 8px;
       min-width: 90px;
       justify-content: center;
+
+      .bb-val {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--cyan);
+      }
+
+      .bb-sep {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0 2px;
+      }
+
+      .bb-label {
+        font-size: 8px;
+        color: var(--text-muted);
+        margin-right: 1px;
+      }
     }
 
-    .bar-beat-display .bb-val {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--cyan);
-    }
-
-    .bar-beat-display .bb-sep {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin: 0 2px;
-    }
-
-    .bar-beat-display .bb-label {
-      font-size: 8px;
-      color: var(--text-muted);
-      margin-right: 1px;
-    }
-
-    .transport .progress-bar {
-      flex: 1;
-      height: 6px;
-      background: var(--bg-input);
-      border-radius: 3px;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .transport .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 3px;
-      width: 0%;
-      transition: width 0.1s;
-    }
-
-    .transport .progress-range-highlight {
-      position: absolute;
-      top: 0;
-      height: 100%;
-      background: rgba(124, 58, 237, 0.3);
-      border-radius: 3px;
-      pointer-events: none;
-    }
-
-    /* BPM editable input */
+    /* ===== BPM ===== */
     .bpm-control {
       display: flex;
       align-items: center;
@@ -337,38 +363,20 @@
       text-align: center;
       outline: none;
       transition: border-color 0.2s;
+
+      &:focus {
+        border-color: var(--accent);
+      }
+
+      &.overridden {
+        border-color: var(--orange);
+        color: var(--orange);
+        background: rgba(249, 115, 22, 0.1);
+      }
     }
 
-    .bpm-input:focus {
-      border-color: var(--accent);
-    }
 
-    .bpm-input.overridden {
-      border-color: var(--orange);
-      color: var(--orange);
-      background: rgba(249, 115, 22, 0.1);
-    }
-
-    .bpm-reset-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 10px;
-      cursor: pointer;
-      padding: 2px;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .bpm-reset-btn.visible {
-      opacity: 1;
-    }
-
-    .bpm-reset-btn:hover {
-      color: var(--orange);
-    }
-
-    /* Range selector row */
+    /* ===== RANGE SELECTOR ===== */
     .transport-range {
       display: flex;
       align-items: center;
@@ -415,10 +423,10 @@
       text-align: center;
       outline: none;
       transition: border-color 0.2s;
-    }
 
-    .range-num-input:focus {
-      border-color: var(--accent);
+      &:focus {
+        border-color: var(--accent);
+      }
     }
 
     .range-slider-wrap {
@@ -454,18 +462,18 @@
       background: transparent;
       pointer-events: none;
       outline: none;
-    }
 
-    .range-handle::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--accent2);
-      cursor: pointer;
-      pointer-events: auto;
-      border: 2px solid var(--bg-card);
-      box-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--accent2);
+        cursor: pointer;
+        pointer-events: auto;
+        border: 2px solid var(--bg-card);
+        box-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+      }
     }
 
     .range-info {
@@ -476,29 +484,7 @@
       flex-shrink: 0;
     }
 
-    .transport .range-all-btn,
-    .range-all-btn {
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text-muted);
-      font-family: var(--font);
-      transition: all 0.2s;
-      flex-shrink: 0;
-      letter-spacing: 0.5px;
-    }
-
-    .transport .range-all-btn:hover,
-    .range-all-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
-
-    /* Transpose row */
+    /* ===== TRANSPOSE ===== */
     .transport-key {
       display: flex;
       align-items: center;
@@ -535,11 +521,11 @@
       justify-content: center;
       transition: all 0.2s;
       flex-shrink: 0;
-    }
 
-    .transpose-btn:hover {
-      border-color: var(--accent);
-      background: rgba(124, 58, 237, 0.15);
+      &:hover {
+        border-color: var(--accent);
+        background: rgba(124, 58, 237, 0.15);
+      }
     }
 
     .transpose-value {
@@ -555,16 +541,16 @@
       text-align: center;
       outline: none;
       transition: border-color 0.2s;
-    }
 
-    .transpose-value:focus {
-      border-color: var(--accent);
-    }
+      &:focus {
+        border-color: var(--accent);
+      }
 
-    .transpose-value.active {
-      border-color: var(--cyan);
-      color: var(--cyan);
-      background: rgba(6, 182, 212, 0.1);
+      &.active {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        background: rgba(6, 182, 212, 0.1);
+      }
     }
 
     .transpose-key-name {
@@ -581,33 +567,13 @@
       text-align: center;
     }
 
-    .transpose-reset-btn {
-      padding: 5px 14px;
-      border-radius: 6px;
-      font-size: 6px;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text-muted);
-      font-family: var(--font);
-      transition: all 0.2s;
-      flex-shrink: 0;
-      letter-spacing: 0.5px;
-    }
-
-    .transpose-reset-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
-
     .transpose-note {
       font-size: 10px;
       color: var(--text-muted);
       flex-shrink: 0;
     }
 
-    /* Track list */
+    /* ===== TRACK LIST ===== */
     .tracks-container {
       flex: 1;
       min-height: 0;
@@ -616,26 +582,25 @@
       margin: 0;
       padding: 8px 16px 40px;
       display: block;
-      /* Scrollbar styling */
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
-    }
 
-    .tracks-container::-webkit-scrollbar {
-      width: 8px;
-    }
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
 
-    .tracks-container::-webkit-scrollbar-track {
-      background: transparent;
-    }
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
 
-    .tracks-container::-webkit-scrollbar-thumb {
-      background-color: var(--border);
-      border-radius: 4px;
-    }
+      &::-webkit-scrollbar-thumb {
+        background-color: var(--border);
+        border-radius: 4px;
+      }
 
-    .tracks-container.visible {
-      display: block;
+      &.visible {
+        display: block;
+      }
     }
 
     .tracks-header {
@@ -647,10 +612,53 @@
       flex-shrink: 0;
       background: var(--bg-card);
       border-bottom: 1px solid var(--border);
-    }
 
-    .tracks-header.visible {
-      display: flex;
+      &.visible {
+        display: flex;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text);
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: var(--accent);
+        }
+
+        &.export-btn {
+          background: rgba(34, 197, 94, 0.15);
+          border-color: var(--green);
+          color: var(--green);
+
+          &:hover {
+            background: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+          }
+        }
+
+        &.wav-btn {
+          background: rgba(6, 182, 212, 0.15);
+          border-color: var(--cyan);
+          color: var(--cyan);
+
+          &:hover {
+            background: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+          }
+        }
+      }
     }
 
     .group-panel {
@@ -661,68 +669,13 @@
       flex-direction: column;
       align-items: stretch;
       box-sizing: border-box;
+
+      &>* {
+        width: 100%;
+      }
     }
 
-    .group-panel>* {
-      width: 100%;
-      /* Ensure all children take full width for max-width + margin:auto to work */
-    }
-
-    /* Override flex-shrink for tracks-container so it still scrolls */
-    /* (tracks-container is NOT a group-panel anymore) */
-
-    .tracks-header h2 {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-
-
-    .tracks-header .actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .tracks-header button {
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text);
-      transition: all 0.2s;
-      font-family: var(--font);
-    }
-
-    .tracks-header button:hover {
-      border-color: var(--accent);
-    }
-
-    .tracks-header button.export-btn {
-      background: rgba(34, 197, 94, 0.15);
-      border-color: var(--green);
-      color: var(--green);
-    }
-
-    .tracks-header button.export-btn:hover {
-      background: rgba(34, 197, 94, 0.3);
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
-    }
-
-    .tracks-header button.wav-btn {
-      background: rgba(6, 182, 212, 0.15);
-      border-color: var(--cyan);
-      color: var(--cyan);
-    }
-
-    .tracks-header button.wav-btn:hover {
-      background: rgba(6, 182, 212, 0.3);
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
-    }
-
-    /* Track card */
+    /* ===== TRACK CARD ===== */
     .track-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -730,15 +683,15 @@
       margin-bottom: 8px;
       overflow: hidden;
       transition: all 0.3s;
-    }
 
-    .track-card.muted {
-      opacity: 0.4;
-    }
+      &.muted {
+        opacity: 0.4;
+      }
 
-    .track-card.solo {
-      border-color: var(--yellow);
-      box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
+      &.solo {
+        border-color: var(--yellow);
+        box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
+      }
     }
 
     .track-head {
@@ -748,10 +701,10 @@
       padding: 12px 16px;
       cursor: pointer;
       transition: background 0.2s;
-    }
 
-    .track-head:hover {
-      background: rgba(255, 255, 255, 0.03);
+      &:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
     }
 
     .track-color {
@@ -774,7 +727,6 @@
       font-size: 12px;
       color: var(--text-muted);
       margin-top: 2px;
-      /*display: none;*/
     }
 
     .track-inst-select {
@@ -785,24 +737,22 @@
       background: var(--bg-input);
       color: var(--text);
       font-size: 11px;
-      font-family: var(--font);
       outline: none;
       max-width: 200px;
       cursor: pointer;
       transition: border-color 0.2s;
+
+      &:hover,
+      &:focus {
+        border-color: var(--accent);
+      }
+
+      &.overridden {
+        border-color: var(--orange);
+        color: var(--orange);
+      }
     }
 
-    .track-inst-select:hover,
-    .track-inst-select:focus {
-      border-color: var(--accent);
-    }
-
-    .track-inst-select.overridden {
-      border-color: var(--orange);
-      color: var(--orange);
-    }
-
-    /* Per-track octave shift */
     .track-octave {
       display: inline-flex;
       align-items: center;
@@ -827,11 +777,11 @@
       transition: all 0.15s;
       padding: 0;
       line-height: 1;
-    }
 
-    .oct-btn:hover {
-      border-color: var(--accent);
-      background: rgba(124, 58, 237, 0.15);
+      &:hover {
+        border-color: var(--accent);
+        background: rgba(124, 58, 237, 0.15);
+      }
     }
 
     .oct-val {
@@ -841,10 +791,10 @@
       font-weight: 700;
       font-family: 'Courier New', monospace;
       color: var(--text-muted);
-    }
 
-    .oct-val.active {
-      color: var(--cyan);
+      &.active {
+        color: var(--cyan);
+      }
     }
 
     .voice-mode-select {
@@ -854,22 +804,21 @@
       background: var(--bg-input);
       color: var(--text-muted);
       font-size: 10px;
-      font-family: var(--font);
       outline: none;
       cursor: pointer;
       transition: border-color 0.2s;
       margin-left: 4px;
-    }
 
-    .voice-mode-select:hover,
-    .voice-mode-select:focus {
-      border-color: var(--accent);
-    }
+      &:hover,
+      &:focus {
+        border-color: var(--accent);
+      }
 
-    .voice-mode-select.active {
-      border-color: var(--cyan);
-      color: var(--cyan);
-      background: rgba(6, 182, 212, 0.1);
+      &.active {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        background: rgba(6, 182, 212, 0.1);
+      }
     }
 
     .track-controls {
@@ -892,24 +841,23 @@
       background: var(--bg-input);
       color: var(--text-muted);
       transition: all 0.2s;
-      font-family: var(--font);
-    }
 
-    .track-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
+      &:hover {
+        border-color: var(--accent);
+        color: var(--text);
+      }
 
-    .track-btn.mute-active {
-      background: var(--red);
-      color: white;
-      border-color: var(--red);
-    }
+      &.mute-active {
+        background: var(--red);
+        color: white;
+        border-color: var(--red);
+      }
 
-    .track-btn.solo-active {
-      background: var(--yellow);
-      color: #000;
-      border-color: var(--yellow);
+      &.solo-active {
+        background: var(--yellow);
+        color: #000;
+        border-color: var(--yellow);
+      }
     }
 
     .volume-slider {
@@ -919,15 +867,15 @@
       background: var(--border);
       border-radius: 2px;
       outline: none;
-    }
 
-    .volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--accent2);
-      cursor: pointer;
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent2);
+        cursor: pointer;
+      }
     }
 
     .pan-group {
@@ -951,16 +899,16 @@
       background: linear-gradient(90deg, var(--blue) 0%, var(--border) 50%, var(--orange) 100%);
       border-radius: 2px;
       outline: none;
-    }
 
-    .pan-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--text);
-      cursor: pointer;
-      border: 1px solid var(--border);
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--text);
+        cursor: pointer;
+        border: 1px solid var(--border);
+      }
     }
 
     .slider-val {
@@ -981,14 +929,14 @@
       flex-shrink: 0;
     }
 
-    /* Piano roll */
+    /* ===== PIANO ROLL ===== */
     .piano-roll-wrapper {
       display: none;
       padding: 0 16px 12px;
-    }
 
-    .piano-roll-wrapper.open {
-      display: block;
+      &.open {
+        display: block;
+      }
     }
 
     .piano-roll {
@@ -997,12 +945,12 @@
       border-radius: 8px;
       position: relative;
       overflow: hidden;
-    }
 
-    .piano-roll canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
     }
 
     .piano-roll-playhead {
@@ -1016,78 +964,78 @@
       box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
       transition: left 0.08s linear;
       opacity: 0;
+
+      &.active {
+        opacity: 1;
+      }
     }
 
-    .piano-roll-playhead.active {
-      opacity: 1;
-    }
-
-    /* Track colors */
+    /* ===== TRACK COLORS ===== */
     .tc0 {
-      background: #ef4444;
+      background: #ef4444
     }
 
     .tc1 {
-      background: #3b82f6;
+      background: #3b82f6
     }
 
     .tc2 {
-      background: #22c55e;
+      background: #22c55e
     }
 
     .tc3 {
-      background: #eab308;
+      background: #eab308
     }
 
     .tc4 {
-      background: #a855f7;
+      background: #a855f7
     }
 
     .tc5 {
-      background: #f97316;
+      background: #f97316
     }
 
     .tc6 {
-      background: #06b6d4;
+      background: #06b6d4
     }
 
     .tc7 {
-      background: #ec4899;
+      background: #ec4899
     }
 
     .tc8 {
-      background: #14b8a6;
+      background: #14b8a6
     }
 
     .tc9 {
-      background: #8b5cf6;
+      background: #8b5cf6
     }
 
     .tc10 {
-      background: #f43f5e;
+      background: #f43f5e
     }
 
     .tc11 {
-      background: #84cc16;
+      background: #84cc16
     }
 
     .tc12 {
-      background: #0ea5e9;
+      background: #0ea5e9
     }
 
     .tc13 {
-      background: #d946ef;
+      background: #d946ef
     }
 
     .tc14 {
-      background: #fb923c;
+      background: #fb923c
     }
 
     .tc15 {
-      background: #2dd4bf;
+      background: #2dd4bf
     }
 
-    /* Loading */
+    /* ===== LOADING ===== */
     .loading-overlay {
       position: fixed;
       inset: 0;
@@ -1096,10 +1044,10 @@
       align-items: center;
       justify-content: center;
       z-index: 200;
-    }
 
-    .loading-overlay.visible {
-      display: flex;
+      &.visible {
+        display: flex;
+      }
     }
 
     .spinner {
@@ -1117,7 +1065,7 @@
       }
     }
 
-    /* Help button */
+    /* ===== HELP ===== */
     .help-btn {
       width: 36px;
       height: 36px;
@@ -1131,118 +1079,56 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
+
+      &:hover {
+        border-color: var(--accent);
+        background: rgba(124, 58, 237, 0.15);
+        transform: scale(1.1);
+      }
     }
 
-    .help-btn:hover {
-      border-color: var(--accent);
-      background: rgba(124, 58, 237, 0.15);
-      transform: scale(1.1);
+    /* Help modal content styling */
+    #help-modal {
+      h3 {
+        color: var(--accent2);
+      }
+
+      p,
+      li {
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--text-muted);
+      }
+
+      ul {
+        padding-left: 18px;
+        margin: 4px 0;
+      }
+
+      li {
+        margin-bottom: 4px;
+      }
+
+      .section {
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border-left: 3px solid var(--accent);
+      }
+
+      kbd {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 12px;
+        font-family: 'Courier New', monospace;
+        color: var(--text);
+      }
     }
 
-    /* Help modal */
-    .help-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 300;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .help-modal-overlay.visible {
-      display: flex;
-      opacity: 1;
-    }
-
-    .help-modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      max-width: 560px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      padding: 28px 32px;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-      transform: translateY(20px);
-      transition: transform 0.3s;
-    }
-
-    .help-modal-overlay.visible .help-modal {
-      transform: translateY(0);
-    }
-
-    .help-modal h2 {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .help-modal h3 {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 16px 0 6px;
-      color: var(--accent2);
-    }
-
-    .help-modal p,
-    .help-modal li {
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--text-muted);
-    }
-
-    .help-modal ul {
-      padding-left: 18px;
-      margin: 4px 0;
-    }
-
-    .help-modal li {
-      margin-bottom: 4px;
-    }
-
-    .help-modal .close-btn {
-      float: right;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 22px;
-      cursor: pointer;
-      padding: 0 4px;
-      transition: color 0.2s;
-    }
-
-    .help-modal .close-btn:hover {
-      color: var(--text);
-    }
-
-    .help-modal .section {
-      padding: 10px 14px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 10px;
-      margin-bottom: 10px;
-      border-left: 3px solid var(--accent);
-    }
-
-    .help-modal kbd {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-size: 12px;
-      font-family: 'Courier New', monospace;
-      color: var(--text);
-    }
-
-    /* FX Panel */
+    /* ===== FX PANEL ===== */
     .fx-panel {
       margin: 0;
       display: flex;
@@ -1251,17 +1137,17 @@
       background: var(--bg-card);
       border-bottom: 1px solid var(--border);
       padding: 6px 16px;
-    }
 
-    .fx-panel.visible {
-      display: flex;
-    }
+      &.visible {
+        display: flex;
+      }
 
-    .fx-panel .fx-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-right: 8px;
+      .fx-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-right: 8px;
+      }
     }
 
     .fx-chain {
@@ -1282,10 +1168,10 @@
       color: var(--border);
       margin: 0 4px;
       user-select: none;
-    }
 
-    .fx-chain-arrow.signal {
-      color: var(--text-muted);
+      &.signal {
+        color: var(--text-muted);
+      }
     }
 
     .fx-chain-io {
@@ -1308,91 +1194,47 @@
       background: var(--bg-input);
       color: var(--text-muted);
       transition: all 0.2s;
-      font-family: var(--font);
       display: flex;
       align-items: center;
       gap: 5px;
       user-select: none;
+
+      &:active {
+        cursor: grabbing;
+      }
+
+      &:hover {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+
+      &.fx-active {
+        border-color: var(--orange);
+        color: var(--orange);
+        background: rgba(249, 115, 22, 0.12);
+        box-shadow: 0 0 8px rgba(249, 115, 22, 0.2);
+      }
+
+      &.drag-over {
+        border-color: var(--accent2);
+        background: rgba(168, 85, 247, 0.15);
+        transform: scale(1.05);
+      }
+
+      &.dragging {
+        opacity: 0.4;
+        transform: scale(0.95);
+      }
     }
 
-    .fx-btn:active {
-      cursor: grabbing;
+    /* FX modal disabled state */
+
+    .fx-modal-content.disabled {
+      opacity: 0.35;
+      pointer-events: none;
     }
 
-    .fx-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
-
-    .fx-btn.fx-active {
-      border-color: var(--orange);
-      color: var(--orange);
-      background: rgba(249, 115, 22, 0.12);
-      box-shadow: 0 0 8px rgba(249, 115, 22, 0.2);
-    }
-
-    .fx-btn.drag-over {
-      border-color: var(--accent2);
-      background: rgba(168, 85, 247, 0.15);
-      transform: scale(1.05);
-    }
-
-    .fx-btn.dragging {
-      opacity: 0.4;
-      transform: scale(0.95);
-    }
-
-    /* FX Modal (shared base) */
-    .fx-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 300;
-    }
-
-    .fx-modal-overlay.visible {
-      display: flex;
-    }
-
-    .fx-modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      max-width: 520px;
-      width: 92%;
-      padding: 24px 28px;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-    }
-
-    .fx-modal h3 {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: var(--orange);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .fx-modal .close-btn {
-      float: right;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 20px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .fx-modal .close-btn:hover {
-      color: var(--text);
-    }
-
-    /* EQ sliders */
+    /* ===== EQ ===== */
     .eq-container {
       display: flex;
       gap: 8px;
@@ -1405,20 +1247,20 @@
       flex-direction: column;
       align-items: center;
       gap: 4px;
-    }
 
-    .eq-band label {
-      font-size: 10px;
-      color: var(--text-muted);
-      font-family: 'Courier New', monospace;
-    }
+      label {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-family: 'Courier New', monospace;
+      }
 
-    .eq-band .eq-val {
-      font-size: 10px;
-      color: var(--accent2);
-      font-family: 'Courier New', monospace;
-      min-width: 32px;
-      text-align: center;
+      .eq-val {
+        font-size: 10px;
+        color: var(--accent2);
+        font-family: 'Courier New', monospace;
+        min-width: 32px;
+        text-align: center;
+      }
     }
 
     .eq-slider {
@@ -1430,38 +1272,20 @@
       outline: none;
       writing-mode: vertical-lr;
       direction: rtl;
+
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--orange);
+        cursor: pointer;
+        box-shadow: 0 0 4px rgba(249, 115, 22, 0.4);
+      }
     }
 
-    .eq-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--orange);
-      cursor: pointer;
-      box-shadow: 0 0 4px rgba(249, 115, 22, 0.4);
-    }
 
-    .eq-reset-btn {
-      margin-top: 10px;
-      padding: 5px 14px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text-muted);
-      font-family: var(--font);
-      transition: all 0.2s;
-    }
-
-    .eq-reset-btn:hover {
-      border-color: var(--accent);
-      color: var(--text);
-    }
-
-    /* FX Output Level */
+    /* ===== SHARED FX OUTPUT ===== */
     .fx-output-control {
       display: flex;
       align-items: center;
@@ -1471,14 +1295,14 @@
       background: rgba(255, 255, 255, 0.03);
       border-radius: 10px;
       border: 1px solid var(--border);
-    }
 
-    .fx-output-control label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      min-width: 60px;
-      white-space: nowrap;
+      label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        min-width: 60px;
+        white-space: nowrap;
+      }
     }
 
     .fx-output-slider {
@@ -1488,16 +1312,16 @@
       background: var(--border);
       border-radius: 3px;
       outline: none;
-    }
 
-    .fx-output-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--green);
-      cursor: pointer;
-      box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--green);
+        cursor: pointer;
+        box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+      }
     }
 
     .fx-output-val {
@@ -1509,18 +1333,18 @@
       font-weight: 700;
     }
 
-    /* Room controls */
+    /* ===== ROOM CONTROLS ===== */
     .room-control {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 12px;
-    }
 
-    .room-control label {
-      font-size: 12px;
-      color: var(--text-muted);
-      min-width: 80px;
+      label {
+        font-size: 12px;
+        color: var(--text-muted);
+        min-width: 80px;
+      }
     }
 
     .room-slider {
@@ -1530,16 +1354,16 @@
       background: var(--border);
       border-radius: 3px;
       outline: none;
-    }
 
-    .room-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--cyan);
-      cursor: pointer;
-      box-shadow: 0 0 4px rgba(6, 182, 212, 0.4);
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--cyan);
+        cursor: pointer;
+        box-shadow: 0 0 4px rgba(6, 182, 212, 0.4);
+      }
     }
 
     .room-val {
@@ -1550,7 +1374,7 @@
       text-align: right;
     }
 
-    /* Toggle switch */
+    /* ===== FX TOGGLE ===== */
     .fx-toggle {
       display: flex;
       align-items: center;
@@ -1562,10 +1386,10 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--text-muted);
-    }
 
-    .fx-toggle-label.on {
-      color: var(--green);
+      &.on {
+        color: var(--green);
+      }
     }
 
     .toggle-switch {
@@ -1573,12 +1397,12 @@
       width: 44px;
       height: 24px;
       cursor: pointer;
-    }
 
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+      input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
     }
 
     .toggle-track {
@@ -1587,18 +1411,18 @@
       background: var(--border);
       border-radius: 12px;
       transition: background 0.3s;
-    }
 
-    .toggle-track::after {
-      content: '';
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      left: 3px;
-      top: 3px;
-      background: var(--text-muted);
-      border-radius: 50%;
-      transition: all 0.3s;
+      &::after {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: var(--text-muted);
+        border-radius: 50%;
+        transition: all 0.3s;
+      }
     }
 
     .toggle-switch input:checked+.toggle-track {
@@ -1611,11 +1435,7 @@
       box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
     }
 
-    .fx-modal-content.disabled {
-      opacity: 0.35;
-      pointer-events: none;
-    }
-
+    /* ===== FX PRESETS ===== */
     .fx-preset-row {
       display: flex;
       align-items: center;
@@ -1623,159 +1443,22 @@
       margin-bottom: 12px;
       padding-bottom: 10px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
 
-    .fx-preset-row label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      flex-shrink: 0;
-    }
-
-    .fx-preset-select {
-      flex: 1;
-      padding: 5px 8px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text);
-      font-size: 12px;
-      font-family: var(--font);
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-
-    .fx-preset-select:hover,
-    .fx-preset-select:focus {
-      border-color: var(--accent);
-    }
-
-    /* WAV Export Modal */
-    .wav-export-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 300;
-    }
-
-    .wav-export-overlay.visible {
-      display: flex;
-    }
-
-    .wav-export-modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      max-width: 500px;
-      width: 92%;
-      padding: 24px 28px;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-    }
-
-    .wav-export-modal h3 {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: var(--cyan);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .wav-export-modal .close-btn {
-      float: right;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 20px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .wav-export-modal .close-btn:hover {
-      color: var(--text);
-    }
-
-    .wav-field {
-      margin-bottom: 14px;
-    }
-
-    .wav-field label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .wav-field input[type="text"] {
-      width: 100%;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text);
-      font-size: 14px;
-      font-family: var(--font);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .wav-field input[type="text"]:focus {
-      border-color: var(--accent);
-    }
-
-    .wav-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 16px;
-    }
-
-    .wav-actions button {
-      padding: 8px 20px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: var(--font);
-      transition: all 0.2s;
-    }
-
-    .wav-btn-cancel {
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text-muted);
-    }
-
-    .wav-btn-cancel:hover {
-      border-color: var(--red);
-      color: var(--red);
-    }
-
-    .wav-btn-exec {
-      border: 1px solid var(--cyan);
-      background: rgba(6, 182, 212, 0.15);
-      color: var(--cyan);
-    }
-
-    .wav-btn-exec:hover {
-      background: rgba(6, 182, 212, 0.3);
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+      label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        flex-shrink: 0;
+      }
     }
 
     .wav-progress-area {
       display: none;
       margin-top: 16px;
-    }
 
-    .wav-progress-area.visible {
-      display: block;
+      &.visible {
+        display: block;
+      }
     }
 
     .wav-progress-bar {
@@ -1808,42 +1491,42 @@
       background: rgba(34, 197, 94, 0.08);
       border: 1px solid rgba(34, 197, 94, 0.3);
       border-radius: 10px;
+
+      &.visible {
+        display: block;
+      }
+
+      .result-icon {
+        font-size: 24px;
+        margin-bottom: 6px;
+      }
+
+      .result-text {
+        font-size: 13px;
+        color: var(--green);
+        font-weight: 600;
+      }
+
+      .result-filename {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 4px;
+        font-family: 'Courier New', monospace;
+        word-break: break-all;
+      }
     }
 
-    .wav-result.visible {
-      display: block;
-    }
-
-    .wav-result .result-icon {
-      font-size: 24px;
-      margin-bottom: 6px;
-    }
-
-    .wav-result .result-text {
-      font-size: 13px;
-      color: var(--green);
-      font-weight: 600;
-    }
-
-    .wav-result .result-filename {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
-      font-family: 'Courier New', monospace;
-      word-break: break-all;
-    }
-
-    /* Level Meter */
+    /* ===== LEVEL METER ===== */
     .level-meter-panel {
       margin: 0;
       display: block;
       background: var(--bg-card);
       border-bottom: 1px solid var(--border);
       padding: 4px 16px;
-    }
 
-    .level-meter-panel.visible {
-      display: block;
+      &.visible {
+        display: block;
+      }
     }
 
     .level-meter-header {
@@ -1851,12 +1534,12 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 6px;
-    }
 
-    .level-meter-header .meter-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
+      .meter-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
     }
 
     .level-meter-canvas {
@@ -1867,6 +1550,7 @@
       background: #0a0a16;
     }
 
+    /* ===== PEQ ===== */
     .peq-display-wrap {
       position: relative;
       width: 100%;
@@ -1900,36 +1584,36 @@
       transform: translate(-50%, -50%);
       z-index: 5;
       transition: box-shadow 0.15s;
-    }
 
-    .peq-point:hover,
-    .peq-point.active {
-      box-shadow: 0 0 12px currentColor;
-    }
+      &:hover,
+      &.active {
+        box-shadow: 0 0 12px currentColor;
+      }
 
-    .peq-point[data-band="0"] {
-      color: #a855f7;
-      border-color: #a855f7;
-    }
+      &[data-band="0"] {
+        color: #a855f7;
+        border-color: #a855f7;
+      }
 
-    .peq-point[data-band="1"] {
-      color: #ec4899;
-      border-color: #ec4899;
-    }
+      &[data-band="1"] {
+        color: #ec4899;
+        border-color: #ec4899;
+      }
 
-    .peq-point[data-band="2"] {
-      color: #f97316;
-      border-color: #f97316;
-    }
+      &[data-band="2"] {
+        color: #f97316;
+        border-color: #f97316;
+      }
 
-    .peq-point[data-band="3"] {
-      color: #22c55e;
-      border-color: #22c55e;
-    }
+      &[data-band="3"] {
+        color: #22c55e;
+        border-color: #22c55e;
+      }
 
-    .peq-point[data-band="4"] {
-      color: #3b82f6;
-      border-color: #3b82f6;
+      &[data-band="4"] {
+        color: #3b82f6;
+        border-color: #3b82f6;
+      }
     }
 
     .peq-info-row {
@@ -1943,11 +1627,11 @@
     .peq-info-item {
       text-align: center;
       min-width: 60px;
-    }
 
-    .peq-info-item .peq-info-val {
-      color: var(--text);
-      font-weight: 600;
+      .peq-info-val {
+        color: var(--text);
+        font-weight: 600;
+      }
     }
 
     .peq-knobs-row {
@@ -1979,6 +1663,28 @@
       font-size: 10px;
       color: var(--text-muted);
     }
+
+    /* ===== INLINE STYLE REPLACEMENTS (Strategy 5) ===== */
+    .fx-transpose-row {
+      display: flex;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .fx-transpose-row .fx-panel {
+      flex: 1;
+      border-bottom: none;
+      border-right: 1px solid var(--border);
+    }
+
+    .fx-transpose-row .transport-key {
+      border-top: none;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
   </style>
 </head>
 
@@ -1991,7 +1697,8 @@
       <span class="subtitle">Multi-track MIDI mixer & FX processor</span>
     </div>
     <div class="header-upload" id="upload-zone">
-      <span class="upload-icon">input MIDI file</span>
+      <i class="bi bi-folder-plus upload-icon"></i>
+      <span class="upload-text">MIDI ファイルを選択</span>
       <input type="file" id="file-input" accept=".mid,.midi" multiple>
     </div>
     <div class="header-file-info" id="file-info">
@@ -2005,434 +1712,484 @@
       </div>
     </div>
     <div class="header-actions">
-      <button class="export-btn" onclick="openMidiModal()" title="Export MIDI">⬇Export MIDI</button>
-      <button class="export-btn wav-btn" onclick="exportWav()" title="Export WAV">⬇Export WAV</button>
+      <button class="btn btn-outline-success btn-sm" onclick="openMidiModal()" title="Export MIDI"><i
+          class="bi bi-download"></i> Export MIDI</button>
+      <button class="btn btn-outline-info btn-sm" onclick="exportWav()" title="Export WAV"><i
+          class="bi bi-download"></i> Export WAV</button>
     </div>
     <button class="help-btn" onclick="toggleHelp()" title="Help">?</button>
   </div>
 
   <!-- Help Modal -->
-  <div class="help-modal-overlay" id="help-modal" onclick="if(event.target===this)toggleHelp()">
-    <div class="help-modal">
-      <button class="close-btn" onclick="toggleHelp()">&times;</button>
-      <h2> SkyMixer の使い方</h2>
+  <div class="modal fade" id="help-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"
+            style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;">
+            SkyMixer の使い方</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
 
-      <div class="section">
-        <h3> 基本操作</h3>
-        <ul>
-          <li>MIDIファイルを<strong>ドラッグ＆ドロップ</strong>またはクリックで読み込み</li>
-          <li><strong>複数ファイル対応</strong> — 複数のMIDIファイルを同時に読み込み、トラックをマージできます</li>
-          <li>最初のファイルのテンポ・拍子・キーがマスタータイムラインとして使用されます</li>
-          <li><kbd>▶</kbd> 再生 / 一時停止、<kbd>⏹</kbd> 停止、<kbd>🔁</kbd> ループ再生</li>
-          <li>プログレスバーをクリックで任意の位置にシーク</li>
-        </ul>
-      </div>
-
-      <div class="section">
-        <h3> トランスポート</h3>
-        <ul>
-          <li><strong>BPM</strong> — テンポを手動変更可能（元のテンポからオーバーライド）</li>
-          <li><strong>KEY</strong> — グローバルトランスポーズ（半音単位、±12）。ドラムトラックには適用されません</li>
-          <li><strong>レンジ選択</strong> — プログレスバーの START / END マーカーで再生範囲を指定</li>
-          <li>ループON時にレンジ範囲をリピート再生</li>
-          <li><strong>Bar:Beat</strong> 表示でリアルタイムに現在位置を確認</li>
-        </ul>
-      </div>
-
-      <div class="section">
-        <h3> トラック操作</h3>
-        <ul>
-          <li><kbd>M</kbd> ミュート — トラックを無音に</li>
-          <li><kbd>S</kbd> ソロ — そのトラックだけを再生</li>
-          <li><kbd>L ── R</kbd> パンスライダー — 左右の定位を調整（リアルタイム反映）</li>
-          <li>ボリュームスライダー — 各トラックの音量を調整（0〜200%）</li>
-          <li>レベルメーター — 各トラックの出力レベルをリアルタイム表示</li>
-          <li>トラック名をクリックするとピアノロール表示を開閉</li>
-        </ul>
-      </div>
-
-      <div class="section">
-        <h3> 楽器・オクターブ・和音フィルター</h3>
-        <ul>
-          <li><strong>インストゥルメント変更</strong> — GM 128楽器から選択。ドラムトラックも変更可能です</li>
-          <li><strong>🥁 Standard Kit (Drums)</strong> — ドラムキットとして再生（オクターブ/トランスポーズ無効）</li>
-          <li><strong>oct ＋/−</strong> — トラック単位のオクターブシフト（±3、ドラム時は無効）</li>
-          <li><strong>和音フィルター</strong>（♪ All / ↑ Top / ↓ Bass）：
+          <div class="section">
+            <h3> 基本操作</h3>
             <ul>
-              <li><strong>♪ All</strong> — すべてのノートをそのまま再生</li>
-              <li><strong>↑ Top</strong> — 最高音のメロディラインだけを抽出して再生</li>
-              <li><strong>↓ Bass</strong> — 最低音のベースラインだけを抽出して再生</li>
+              <li>MIDIファイルを<strong>ドラッグ＆ドロップ</strong>またはクリックで読み込み</li>
+              <li><strong>複数ファイル対応</strong> — 複数のMIDIファイルを同時に読み込み、トラックをマージできます</li>
+              <li>最初のファイルのテンポ・拍子・キーがマスタータイムラインとして使用されます</li>
+              <li><kbd>▶</kbd> 再生 / 一時停止、<kbd>⏹</kbd> 停止、<kbd>🔁</kbd> ループ再生</li>
+              <li>プログレスバーをクリックで任意の位置にシーク</li>
             </ul>
-          </li>
-          <li>和音フィルターはWAV/MIDIエクスポートにも反映されます</li>
-        </ul>
-      </div>
+          </div>
 
-      <div class="section">
-        <h3> FXチェーン</h3>
-        <p>IN → <strong> NOTE</strong> → [ドラッグ順序変更可能なFX] → <strong> PEQ</strong> → OUT</p>
-        <ul>
-          <li><strong> NOTE</strong>（固定・先頭） — アタック・ベロシティ・デュレーション・リリースを調整</li>
-          <li><strong> EQ</strong> — 7バンドグラフィックイコライザー（60Hz〜12kHz、±12dB）</li>
-          <li><strong> CHORUS</strong> — ステレオデュアルボイスコーラス（Rate / Depth / Spread / Mix）</li>
-          <li><strong> DYN</strong> — ダイナミクスコンプレッサー（Threshold / Ratio / Attack / Release / Makeup）</li>
-          <li><strong> ROOM</strong> — ディレイ＆リバーブ（Time / Feedback / Size / Mix）</li>
-          <li><strong> PEQ</strong>（固定・末尾） — 5バンドパラメトリックイコライザー（ビジュアル操作）</li>
-        </ul>
-        <p>中央の4つのFX（EQ / CHORUS / DYN / ROOM）はドラッグで順序を変更できます</p>
-      </div>
+          <div class="section">
+            <h3> トランスポート</h3>
+            <ul>
+              <li><strong>BPM</strong> — テンポを手動変更可能（元のテンポからオーバーライド）</li>
+              <li><strong>KEY</strong> — グローバルトランスポーズ（半音単位、±12）。ドラムトラックには適用されません</li>
+              <li><strong>レンジ選択</strong> — プログレスバーの START / END マーカーで再生範囲を指定</li>
+              <li>ループON時にレンジ範囲をリピート再生</li>
+              <li><strong>Bar:Beat</strong> 表示でリアルタイムに現在位置を確認</li>
+            </ul>
+          </div>
 
-      <div class="section">
-        <h3> パラメトリックEQ の操作</h3>
-        <ul>
-          <li><strong>コントロールポイント</strong>を左右にドラッグ → 周波数を変更</li>
-          <li><strong>コントロールポイント</strong>を上下にドラッグ → ゲインを変更（±18dB）</li>
-          <li>下部の<strong>回転ノブ</strong>を上下にドラッグ → Q値を変更（0.1〜10.0）</li>
-          <li>バンド構成: ① LS（Low Shelf）② LM ③ MID ④ HM ⑤ HS（High Shelf）</li>
-          <li>再生中はリアルタイムのスペクトラムアナライザーが背景に表示されます</li>
-        </ul>
-      </div>
+          <div class="section">
+            <h3> トラック操作</h3>
+            <ul>
+              <li><kbd>M</kbd> ミュート — トラックを無音に</li>
+              <li><kbd>S</kbd> ソロ — そのトラックだけを再生</li>
+              <li><kbd>L ── R</kbd> パンスライダー — 左右の定位を調整（リアルタイム反映）</li>
+              <li>ボリュームスライダー — 各トラックの音量を調整（0〜200%）</li>
+              <li>レベルメーター — 各トラックの出力レベルをリアルタイム表示</li>
+              <li>トラック名をクリックするとピアノロール表示を開閉</li>
+            </ul>
+          </div>
 
-      <div class="section">
-        <h3> レベルメーター</h3>
-        <ul>
-          <li>画面下部に<strong>10バンド ステレオ レベルメーター</strong>を搭載</li>
-          <li>L/R独立でリアルタイムのオーディオレベルを表示</li>
-          <li>各トラックにも個別のレベルメーターを表示</li>
-          <li><strong>マスター出力</strong>スライダーで全体音量を調整</li>
-        </ul>
-      </div>
+          <div class="section">
+            <h3> 楽器・オクターブ・和音フィルター</h3>
+            <ul>
+              <li><strong>インストゥルメント変更</strong> — GM 128楽器から選択。ドラムトラックも変更可能です</li>
+              <li><strong>🥁 Standard Kit (Drums)</strong> — ドラムキットとして再生（オクターブ/トランスポーズ無効）</li>
+              <li><strong>oct ＋/−</strong> — トラック単位のオクターブシフト（±3、ドラム時は無効）</li>
+              <li><strong>和音フィルター</strong>（♪ All / ↑ Top / ↓ Bass）：
+                <ul>
+                  <li><strong>♪ All</strong> — すべてのノートをそのまま再生</li>
+                  <li><strong>↑ Top</strong> — 最高音のメロディラインだけを抽出して再生</li>
+                  <li><strong>↓ Bass</strong> — 最低音のベースラインだけを抽出して再生</li>
+                </ul>
+              </li>
+              <li>和音フィルターはWAV/MIDIエクスポートにも反映されます</li>
+            </ul>
+          </div>
 
-      <div class="section">
-        <h3> エクスポート</h3>
-        <ul>
-          <li><strong>⬇ Export MIDI</strong> — ミュート/ソロ/ボリューム/パン/オクターブ/トランスポーズ/楽器変更を反映</li>
-          <li>ミュートトラック除外オプション付き（トラック構造維持 or 圧縮書き出し）</li>
-          <li><strong> Export WAV</strong> — すべてのFXエフェクト・パン設定を反映したオーディオをレンダリング</li>
-          <li>WAVエクスポートにはNOTE・EQ・CHORUS・DYN・ROOM・PEQ の全設定と和音フィルターが適用されます</li>
-        </ul>
-      </div>
+          <div class="section">
+            <h3> FXチェーン</h3>
+            <p>IN → <strong> NOTE</strong> → [ドラッグ順序変更可能なFX] → <strong> PEQ</strong> → OUT</p>
+            <ul>
+              <li><strong> NOTE</strong>（固定・先頭） — アタック・ベロシティ・デュレーション・リリースを調整</li>
+              <li><strong> EQ</strong> — 7バンドグラフィックイコライザー（60Hz〜12kHz、±12dB）</li>
+              <li><strong> CHORUS</strong> — ステレオデュアルボイスコーラス（Rate / Depth / Spread / Mix）</li>
+              <li><strong> DYN</strong> — ダイナミクスコンプレッサー（Threshold / Ratio / Attack / Release / Makeup）</li>
+              <li><strong> ROOM</strong> — ディレイ＆リバーブ（Time / Feedback / Size / Mix）</li>
+              <li><strong> PEQ</strong>（固定・末尾） — 5バンドパラメトリックイコライザー（ビジュアル操作）</li>
+            </ul>
+            <p>中央の4つのFX（EQ / CHORUS / DYN / ROOM）はドラッグで順序を変更できます</p>
+          </div>
 
-      <div class="section">
-        <h3>💡 ヒント</h3>
-        <ul>
-          <li>全トラックのピアノロールを開くと各パートのノート配置を一覧できます</li>
-          <li>NOTEエフェクターのDurationとReleaseを上げると、短く切れる音を自然に伸ばせます</li>
-          <li>PEQでリアルタイムにスペクトラムを見ながら帯域を調整し、そのままWAVエクスポートできます</li>
-          <li>各FXにはON/OFFトグルとOUTPUTレベルがあり、個別にバイパス可能です</li>
-          <li>和音フィルター「↑ Top」で伴奏付きトラックから主旋律だけを取り出せます</li>
-          <li>複数のMIDIファイルをマージして、異なるファイルのトラックを同時にミキシングできます</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+          <div class="section">
+            <h3> パラメトリックEQ の操作</h3>
+            <ul>
+              <li><strong>コントロールポイント</strong>を左右にドラッグ → 周波数を変更</li>
+              <li><strong>コントロールポイント</strong>を上下にドラッグ → ゲインを変更（±18dB）</li>
+              <li>下部の<strong>回転ノブ</strong>を上下にドラッグ → Q値を変更（0.1〜10.0）</li>
+              <li>バンド構成: ① LS（Low Shelf）② LM ③ MID ④ HM ⑤ HS（High Shelf）</li>
+              <li>再生中はリアルタイムのスペクトラムアナライザーが背景に表示されます</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <h3> レベルメーター</h3>
+            <ul>
+              <li>画面下部に<strong>10バンド ステレオ レベルメーター</strong>を搭載</li>
+              <li>L/R独立でリアルタイムのオーディオレベルを表示</li>
+              <li>各トラックにも個別のレベルメーターを表示</li>
+              <li><strong>マスター出力</strong>スライダーで全体音量を調整</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <h3> エクスポート</h3>
+            <ul>
+              <li><strong>⬇ Export MIDI</strong> — ミュート/ソロ/ボリューム/パン/オクターブ/トランスポーズ/楽器変更を反映</li>
+              <li>ミュートトラック除外オプション付き（トラック構造維持 or 圧縮書き出し）</li>
+              <li><strong> Export WAV</strong> — すべてのFXエフェクト・パン設定を反映したオーディオをレンダリング</li>
+              <li>WAVエクスポートにはNOTE・EQ・CHORUS・DYN・ROOM・PEQ の全設定と和音フィルターが適用されます</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <h3>💡 ヒント</h3>
+            <ul>
+              <li>全トラックのピアノロールを開くと各パートのノート配置を一覧できます</li>
+              <li>NOTEエフェクターのDurationとReleaseを上げると、短く切れる音を自然に伸ばせます</li>
+              <li>PEQでリアルタイムにスペクトラムを見ながら帯域を調整し、そのままWAVエクスポートできます</li>
+              <li>各FXにはON/OFFトグルとOUTPUTレベルがあり、個別にバイパス可能です</li>
+              <li>和音フィルター「↑ Top」で伴奏付きトラックから主旋律だけを取り出せます</li>
+              <li>複数のMIDIファイルをマージして、異なるファイルのトラックを同時にミキシングできます</li>
+            </ul>
+          </div>
+        </div><!-- modal-body -->
+      </div><!-- modal-content -->
+    </div><!-- modal-dialog -->
+  </div><!-- help-modal -->
 
 
   <!-- EQ Modal -->
-  <div class="fx-modal-overlay" id="eq-modal" onclick="if(event.target===this)toggleEqModal()">
-    <div class="fx-modal">
-      <button class="close-btn" onclick="toggleEqModal()">&times;</button>
-      <h3> 7-Band Graphic EQ</h3>
-      <div class="fx-preset-row">
-        <label>PRESET</label>
-        <select class="fx-preset-select" id="preset-eq"
-          onchange="applyFxPreset('eq',this.value);this.value=''"></select>
-      </div>
-      <div class="fx-toggle">
-        <label class="toggle-switch"><input type="checkbox" id="eq-toggle"
-            onchange="toggleEqEnabled(this.checked)"><span class="toggle-track"></span></label>
-        <span class="fx-toggle-label" id="eq-toggle-label">OFF</span>
-      </div>
-      <div class="fx-modal-content disabled" id="eq-content">
-        <div class="eq-container" id="eq-sliders"></div>
-        <div class="room-control" style="margin-top: 12px; margin-bottom: 12px;">
-          <label>Amount (x)</label>
-          <input type="range" class="room-slider" id="eq-multiplier" min="0" max="5" step="0.1" value="1.0"
-            oninput="updateEqAll()">
-          <span class="room-val" id="eq-multiplier-val">1.0x</span>
+  <div class="modal fade" id="eq-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-warning"><i class="bi bi-sliders"></i> 7-Band Graphic EQ</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div style="text-align:center">
-          <button class="eq-reset-btn" onclick="resetEQ()">Reset Flat</button>
-        </div>
-        <div class="fx-output-control">
-          <label> OUTPUT</label>
-          <input type="range" class="fx-output-slider" id="eq-output-level" min="0" max="300" value="100"
-            oninput="updateEqOutput()">
-          <span class="fx-output-val" id="eq-output-val">100%</span>
+        <div class="modal-body">
+          <div class="fx-preset-row">
+            <label>PRESET</label>
+            <select class="fx-preset-select form-select form-select-sm" id="preset-eq"
+              onchange="applyFxPreset('eq',this.value);this.value=''"></select>
+          </div>
+          <div class="fx-toggle">
+            <label class="toggle-switch"><input type="checkbox" id="eq-toggle"
+                onchange="toggleEqEnabled(this.checked)"><span class="toggle-track"></span></label>
+            <span class="fx-toggle-label" id="eq-toggle-label">OFF</span>
+          </div>
+          <div class="fx-modal-content disabled" id="eq-content">
+            <div class="eq-container" id="eq-sliders"></div>
+            <div class="room-control" style="margin-top: 12px; margin-bottom: 12px;">
+              <label>Amount (x)</label>
+              <input type="range" class="room-slider" id="eq-multiplier" min="0" max="5" step="0.1" value="1.0"
+                oninput="updateEqAll()">
+              <span class="room-val" id="eq-multiplier-val">1.0x</span>
+            </div>
+            <div class="text-center">
+              <button class="btn btn-outline-secondary btn-sm" onclick="resetEQ()">Reset Flat</button>
+            </div>
+            <div class="fx-output-control">
+              <label> OUTPUT</label>
+              <input type="range" class="fx-output-slider" id="eq-output-level" min="0" max="300" value="100"
+                oninput="updateEqOutput()">
+              <span class="fx-output-val" id="eq-output-val">100%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Room Modal -->
-  <div class="fx-modal-overlay" id="room-modal" onclick="if(event.target===this)toggleRoomModal()">
-    <div class="fx-modal">
-      <button class="close-btn" onclick="toggleRoomModal()">&times;</button>
-      <h3> ROOM (Delay + Reverb)</h3>
-      <div class="fx-preset-row">
-        <label>PRESET</label>
-        <select class="fx-preset-select" id="preset-room"
-          onchange="applyFxPreset('room',this.value);this.value=''"></select>
-      </div>
-      <div class="fx-toggle">
-        <label class="toggle-switch"><input type="checkbox" id="room-toggle"
-            onchange="toggleRoomEnabled(this.checked)"><span class="toggle-track"></span></label>
-        <span class="fx-toggle-label" id="room-toggle-label">OFF</span>
-      </div>
-      <div class="fx-modal-content disabled" id="room-content">
-        <div style="margin-bottom:16px">
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px"> Delay</div>
-          <div class="room-control">
-            <label>Time</label>
-            <input type="range" class="room-slider" id="delay-time" min="0" max="1000" value="300"
-              oninput="updateDelay()">
-            <span class="room-val" id="delay-time-val">300ms</span>
-          </div>
-          <div class="room-control">
-            <label>Feedback</label>
-            <input type="range" class="room-slider" id="delay-feedback" min="0" max="90" value="30"
-              oninput="updateDelay()">
-            <span class="room-val" id="delay-feedback-val">30%</span>
-          </div>
-          <div class="room-control">
-            <label>Mix</label>
-            <input type="range" class="room-slider" id="delay-mix" min="0" max="100" value="0" oninput="updateDelay()">
-            <span class="room-val" id="delay-mix-val">0%</span>
-          </div>
+  <div class="modal fade" id="room-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-warning"><i class="bi bi-soundwave"></i> ROOM (Delay + Reverb)</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px"> Reverb</div>
-          <div class="room-control">
-            <label>Room Size</label>
-            <input type="range" class="room-slider" id="reverb-size" min="1" max="50" value="20"
-              oninput="updateReverb()">
-            <span class="room-val" id="reverb-size-val">2.0s</span>
+        <div class="modal-body">
+          <div class="fx-preset-row">
+            <label>PRESET</label>
+            <select class="fx-preset-select form-select form-select-sm" id="preset-room"
+              onchange="applyFxPreset('room',this.value);this.value=''"></select>
           </div>
-          <div class="room-control">
-            <label>Mix</label>
-            <input type="range" class="room-slider" id="reverb-mix" min="0" max="100" value="20"
-              oninput="updateReverb()">
-            <span class="room-val" id="reverb-mix-val">20%</span>
+          <div class="fx-toggle">
+            <label class="toggle-switch"><input type="checkbox" id="room-toggle"
+                onchange="toggleRoomEnabled(this.checked)"><span class="toggle-track"></span></label>
+            <span class="fx-toggle-label" id="room-toggle-label">OFF</span>
           </div>
-        </div>
-        <div class="fx-output-control">
-          <label> OUTPUT</label>
-          <input type="range" class="fx-output-slider" id="room-output-level" min="0" max="300" value="100"
-            oninput="updateRoomOutput()">
-          <span class="fx-output-val" id="room-output-val">100%</span>
+          <div class="fx-modal-content disabled" id="room-content">
+            <div style="margin-bottom:16px">
+              <div class="fx-section-title"> Delay</div>
+              <div class="room-control">
+                <label>Time</label>
+                <input type="range" class="room-slider" id="delay-time" min="0" max="1000" value="300"
+                  oninput="updateDelay()">
+                <span class="room-val" id="delay-time-val">300ms</span>
+              </div>
+              <div class="room-control">
+                <label>Feedback</label>
+                <input type="range" class="room-slider" id="delay-feedback" min="0" max="90" value="30"
+                  oninput="updateDelay()">
+                <span class="room-val" id="delay-feedback-val">30%</span>
+              </div>
+              <div class="room-control">
+                <label>Mix</label>
+                <input type="range" class="room-slider" id="delay-mix" min="0" max="100" value="0"
+                  oninput="updateDelay()">
+                <span class="room-val" id="delay-mix-val">0%</span>
+              </div>
+            </div>
+            <div>
+              <div class="fx-section-title"> Reverb</div>
+              <div class="room-control">
+                <label>Room Size</label>
+                <input type="range" class="room-slider" id="reverb-size" min="1" max="50" value="20"
+                  oninput="updateReverb()">
+                <span class="room-val" id="reverb-size-val">2.0s</span>
+              </div>
+              <div class="room-control">
+                <label>Mix</label>
+                <input type="range" class="room-slider" id="reverb-mix" min="0" max="100" value="20"
+                  oninput="updateReverb()">
+                <span class="room-val" id="reverb-mix-val">20%</span>
+              </div>
+            </div>
+            <div class="fx-output-control">
+              <label> OUTPUT</label>
+              <input type="range" class="fx-output-slider" id="room-output-level" min="0" max="300" value="100"
+                oninput="updateRoomOutput()">
+              <span class="fx-output-val" id="room-output-val">100%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Note Control Modal -->
-  <div class="fx-modal-overlay" id="note-modal" onclick="if(event.target===this)toggleNoteModal()">
-    <div class="fx-modal">
-      <button class="close-btn" onclick="toggleNoteModal()">&times;</button>
-      <h3> NOTE</h3>
-      <div class="fx-preset-row">
-        <label>PRESET</label>
-        <select class="fx-preset-select" id="preset-note"
-          onchange="applyFxPreset('note',this.value);this.value=''"></select>
-      </div>
-      <div class="fx-toggle">
-        <label class="toggle-switch"><input type="checkbox" id="note-toggle"
-            onchange="toggleNoteEnabled(this.checked)"><span class="toggle-track"></span></label>
-        <span class="fx-toggle-label" id="note-toggle-label">OFF</span>
-      </div>
-      <div class="fx-modal-content disabled" id="note-content">
-        <div class="room-control">
-          <label>Attack</label>
-          <input type="range" class="room-slider" id="note-attack" min="0" max="300" value="10"
-            oninput="updateNoteParams()">
-          <span class="room-val" id="note-attack-val">10ms</span>
+  <div class="modal fade" id="note-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-warning"><i class="bi bi-music-note-beamed"></i> NOTE</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="room-control">
-          <label>Velocity</label>
-          <input type="range" class="room-slider" id="note-velocity" min="25" max="200" value="100"
-            oninput="updateNoteParams()">
-          <span class="room-val" id="note-velocity-val">100%</span>
-        </div>
-        <div class="room-control">
-          <label>Duration</label>
-          <input type="range" class="room-slider" id="note-duration" min="50" max="200" value="100"
-            oninput="updateNoteParams()">
-          <span class="room-val" id="note-duration-val">100%</span>
-        </div>
-        <div class="room-control">
-          <label>Release</label>
-          <input type="range" class="room-slider" id="note-release" min="50" max="2000" value="300"
-            oninput="updateNoteParams()">
-          <span class="room-val" id="note-release-val">300ms</span>
+        <div class="modal-body">
+          <div class="fx-preset-row">
+            <label>PRESET</label>
+            <select class="fx-preset-select form-select form-select-sm" id="preset-note"
+              onchange="applyFxPreset('note',this.value);this.value=''"></select>
+          </div>
+          <div class="fx-toggle">
+            <label class="toggle-switch"><input type="checkbox" id="note-toggle"
+                onchange="toggleNoteEnabled(this.checked)"><span class="toggle-track"></span></label>
+            <span class="fx-toggle-label" id="note-toggle-label">OFF</span>
+          </div>
+          <div class="fx-modal-content disabled" id="note-content">
+            <div class="room-control">
+              <label>Attack</label>
+              <input type="range" class="room-slider" id="note-attack" min="0" max="300" value="10"
+                oninput="updateNoteParams()">
+              <span class="room-val" id="note-attack-val">10ms</span>
+            </div>
+            <div class="room-control">
+              <label>Velocity</label>
+              <input type="range" class="room-slider" id="note-velocity" min="25" max="200" value="100"
+                oninput="updateNoteParams()">
+              <span class="room-val" id="note-velocity-val">100%</span>
+            </div>
+            <div class="room-control">
+              <label>Duration</label>
+              <input type="range" class="room-slider" id="note-duration" min="50" max="200" value="100"
+                oninput="updateNoteParams()">
+              <span class="room-val" id="note-duration-val">100%</span>
+            </div>
+            <div class="room-control">
+              <label>Release</label>
+              <input type="range" class="room-slider" id="note-release" min="50" max="2000" value="300"
+                oninput="updateNoteParams()">
+              <span class="room-val" id="note-release-val">300ms</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Chorus Modal -->
-  <div class="fx-modal-overlay" id="chorus-modal" onclick="if(event.target===this)toggleChorusModal()">
-    <div class="fx-modal">
-      <button class="close-btn" onclick="toggleChorusModal()">&times;</button>
-      <h3> CHORUS</h3>
-      <div class="fx-preset-row">
-        <label>PRESET</label>
-        <select class="fx-preset-select" id="preset-chorus"
-          onchange="applyFxPreset('chorus',this.value);this.value=''"></select>
-      </div>
-      <div class="fx-toggle">
-        <label class="toggle-switch"><input type="checkbox" id="chorus-toggle"
-            onchange="toggleChorusEnabled(this.checked)"><span class="toggle-track"></span></label>
-        <span class="fx-toggle-label" id="chorus-toggle-label">OFF</span>
-      </div>
-      <div class="fx-modal-content disabled" id="chorus-content">
-        <div class="room-control">
-          <label>Rate</label>
-          <input type="range" class="room-slider" id="chorus-rate" min="1" max="80" value="12" oninput="updateChorus()">
-          <span class="room-val" id="chorus-rate-val">1.2Hz</span>
+  <div class="modal fade" id="chorus-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-warning"><i class="bi bi-water"></i> CHORUS</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="room-control">
-          <label>Depth</label>
-          <input type="range" class="room-slider" id="chorus-depth" min="1" max="25" value="6" oninput="updateChorus()">
-          <span class="room-val" id="chorus-depth-val">6ms</span>
-        </div>
-        <div class="room-control">
-          <label>Spread</label>
-          <input type="range" class="room-slider" id="chorus-spread" min="0" max="100" value="70"
-            oninput="updateChorus()">
-          <span class="room-val" id="chorus-spread-val">70%</span>
-        </div>
-        <div class="room-control">
-          <label>Mix</label>
-          <input type="range" class="room-slider" id="chorus-mix" min="0" max="100" value="40" oninput="updateChorus()">
-          <span class="room-val" id="chorus-mix-val">40%</span>
-        </div>
-        <div class="fx-output-control">
-          <label> OUTPUT</label>
-          <input type="range" class="fx-output-slider" id="chorus-output-level" min="0" max="300" value="100"
-            oninput="updateChorusOutput()">
-          <span class="fx-output-val" id="chorus-output-val">100%</span>
+        <div class="modal-body">
+          <div class="fx-preset-row">
+            <label>PRESET</label>
+            <select class="fx-preset-select form-select form-select-sm" id="preset-chorus"
+              onchange="applyFxPreset('chorus',this.value);this.value=''"></select>
+          </div>
+          <div class="fx-toggle">
+            <label class="toggle-switch"><input type="checkbox" id="chorus-toggle"
+                onchange="toggleChorusEnabled(this.checked)"><span class="toggle-track"></span></label>
+            <span class="fx-toggle-label" id="chorus-toggle-label">OFF</span>
+          </div>
+          <div class="fx-modal-content disabled" id="chorus-content">
+            <div class="room-control">
+              <label>Rate</label>
+              <input type="range" class="room-slider" id="chorus-rate" min="1" max="80" value="12"
+                oninput="updateChorus()">
+              <span class="room-val" id="chorus-rate-val">1.2Hz</span>
+            </div>
+            <div class="room-control">
+              <label>Depth</label>
+              <input type="range" class="room-slider" id="chorus-depth" min="1" max="25" value="6"
+                oninput="updateChorus()">
+              <span class="room-val" id="chorus-depth-val">6ms</span>
+            </div>
+            <div class="room-control">
+              <label>Spread</label>
+              <input type="range" class="room-slider" id="chorus-spread" min="0" max="100" value="70"
+                oninput="updateChorus()">
+              <span class="room-val" id="chorus-spread-val">70%</span>
+            </div>
+            <div class="room-control">
+              <label>Mix</label>
+              <input type="range" class="room-slider" id="chorus-mix" min="0" max="100" value="40"
+                oninput="updateChorus()">
+              <span class="room-val" id="chorus-mix-val">40%</span>
+            </div>
+            <div class="fx-output-control">
+              <label> OUTPUT</label>
+              <input type="range" class="fx-output-slider" id="chorus-output-level" min="0" max="300" value="100"
+                oninput="updateChorusOutput()">
+              <span class="fx-output-val" id="chorus-output-val">100%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Dynamics Modal -->
-  <div class="fx-modal-overlay" id="dynamics-modal" onclick="if(event.target===this)toggleDynamicsModal()">
-    <div class="fx-modal">
-      <button class="close-btn" onclick="toggleDynamicsModal()">&times;</button>
-      <h3> DYNAMICS</h3>
-      <div class="fx-preset-row">
-        <label>PRESET</label>
-        <select class="fx-preset-select" id="preset-dynamics"
-          onchange="applyFxPreset('dynamics',this.value);this.value=''"></select>
-      </div>
-      <div class="fx-toggle">
-        <label class="toggle-switch"><input type="checkbox" id="dynamics-toggle"
-            onchange="toggleDynamicsEnabled(this.checked)"><span class="toggle-track"></span></label>
-        <span class="fx-toggle-label" id="dynamics-toggle-label">OFF</span>
-      </div>
-      <div class="fx-modal-content disabled" id="dynamics-content">
-        <div class="room-control">
-          <label>Threshold</label>
-          <input type="range" class="room-slider" id="dyn-threshold" min="-60" max="0" value="-24"
-            oninput="updateDynamics()">
-          <span class="room-val" id="dyn-threshold-val">-24dB</span>
+  <div class="modal fade" id="dynamics-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-warning"><i class="bi bi-activity"></i> DYNAMICS</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="room-control">
-          <label>Ratio</label>
-          <input type="range" class="room-slider" id="dyn-ratio" min="1" max="20" value="4" oninput="updateDynamics()">
-          <span class="room-val" id="dyn-ratio-val">4:1</span>
-        </div>
-        <div class="room-control">
-          <label>Attack</label>
-          <input type="range" class="room-slider" id="dyn-attack" min="0" max="200" value="10"
-            oninput="updateDynamics()">
-          <span class="room-val" id="dyn-attack-val">10ms</span>
-        </div>
-        <div class="room-control">
-          <label>Release</label>
-          <input type="range" class="room-slider" id="dyn-release" min="10" max="1000" value="250"
-            oninput="updateDynamics()">
-          <span class="room-val" id="dyn-release-val">250ms</span>
-        </div>
-        <div class="room-control">
-          <label>Makeup</label>
-          <input type="range" class="room-slider" id="dyn-makeup" min="0" max="24" value="0" oninput="updateDynamics()">
-          <span class="room-val" id="dyn-makeup-val">0dB</span>
-        </div>
-        <div class="fx-output-control">
-          <label> OUTPUT</label>
-          <input type="range" class="fx-output-slider" id="dynamics-output-level" min="0" max="300" value="100"
-            oninput="updateDynamicsOutput()">
-          <span class="fx-output-val" id="dynamics-output-val">100%</span>
+        <div class="modal-body">
+          <div class="fx-preset-row">
+            <label>PRESET</label>
+            <select class="fx-preset-select form-select form-select-sm" id="preset-dynamics"
+              onchange="applyFxPreset('dynamics',this.value);this.value=''"></select>
+          </div>
+          <div class="fx-toggle">
+            <label class="toggle-switch"><input type="checkbox" id="dynamics-toggle"
+                onchange="toggleDynamicsEnabled(this.checked)"><span class="toggle-track"></span></label>
+            <span class="fx-toggle-label" id="dynamics-toggle-label">OFF</span>
+          </div>
+          <div class="fx-modal-content disabled" id="dynamics-content">
+            <div class="room-control">
+              <label>Threshold</label>
+              <input type="range" class="room-slider" id="dyn-threshold" min="-60" max="0" value="-24"
+                oninput="updateDynamics()">
+              <span class="room-val" id="dyn-threshold-val">-24dB</span>
+            </div>
+            <div class="room-control">
+              <label>Ratio</label>
+              <input type="range" class="room-slider" id="dyn-ratio" min="1" max="20" value="4"
+                oninput="updateDynamics()">
+              <span class="room-val" id="dyn-ratio-val">4:1</span>
+            </div>
+            <div class="room-control">
+              <label>Attack</label>
+              <input type="range" class="room-slider" id="dyn-attack" min="0" max="200" value="10"
+                oninput="updateDynamics()">
+              <span class="room-val" id="dyn-attack-val">10ms</span>
+            </div>
+            <div class="room-control">
+              <label>Release</label>
+              <input type="range" class="room-slider" id="dyn-release" min="10" max="1000" value="250"
+                oninput="updateDynamics()">
+              <span class="room-val" id="dyn-release-val">250ms</span>
+            </div>
+            <div class="room-control">
+              <label>Makeup</label>
+              <input type="range" class="room-slider" id="dyn-makeup" min="0" max="24" value="0"
+                oninput="updateDynamics()">
+              <span class="room-val" id="dyn-makeup-val">0dB</span>
+            </div>
+            <div class="fx-output-control">
+              <label> OUTPUT</label>
+              <input type="range" class="fx-output-slider" id="dynamics-output-level" min="0" max="300" value="100"
+                oninput="updateDynamicsOutput()">
+              <span class="fx-output-val" id="dynamics-output-val">100%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- PEQ Modal -->
-  <div class="fx-modal-overlay" id="peq-modal" onclick="if(event.target===this)togglePeqModal()">
-    <div class="fx-modal" style="max-width:620px">
-      <button class="close-btn" onclick="togglePeqModal()">&times;</button>
-      <h3> PARAMETRIC EQ</h3>
-      <div class="fx-preset-row">
-        <label>PRESET</label>
-        <select class="fx-preset-select" id="preset-peq"
-          onchange="applyFxPreset('peq',this.value);this.value=''"></select>
-      </div>
-      <div class="fx-toggle">
-        <label class="toggle-switch"><input type="checkbox" id="peq-toggle"
-            onchange="togglePeqEnabled(this.checked)"><span class="toggle-track"></span></label>
-        <span class="fx-toggle-label" id="peq-toggle-label">OFF</span>
-      </div>
-      <div class="fx-modal-content disabled" id="peq-content">
-        <div class="peq-display-wrap" id="peq-display-wrap">
-          <canvas class="peq-canvas" id="peq-canvas"></canvas>
-          <div class="peq-point" data-band="0" id="peq-pt-0">1</div>
-          <div class="peq-point" data-band="1" id="peq-pt-1">2</div>
-          <div class="peq-point" data-band="2" id="peq-pt-2">3</div>
-          <div class="peq-point" data-band="3" id="peq-pt-3">4</div>
-          <div class="peq-point" data-band="4" id="peq-pt-4">5</div>
+  <div class="modal fade" id="peq-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-warning"><i class="bi bi-bezier2"></i> PARAMETRIC EQ</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="peq-info-row" id="peq-info-row">
-          <div class="peq-info-item"><span style="color:#a855f7">●</span> LS <span class="peq-info-val"
-              id="peq-info-0">80Hz 0dB</span></div>
-          <div class="peq-info-item"><span style="color:#ec4899">●</span> LM <span class="peq-info-val"
-              id="peq-info-1">300Hz 0dB</span></div>
-          <div class="peq-info-item"><span style="color:#f97316">●</span> MID <span class="peq-info-val"
-              id="peq-info-2">1kHz 0dB</span></div>
-          <div class="peq-info-item"><span style="color:#22c55e">●</span> HM <span class="peq-info-val"
-              id="peq-info-3">4kHz 0dB</span></div>
-          <div class="peq-info-item"><span style="color:#3b82f6">●</span> HS <span class="peq-info-val"
-              id="peq-info-4">12kHz 0dB</span></div>
-        </div>
-        <div class="peq-knobs-row">
-          <div class="peq-knob-wrap">
-            <span class="peq-knob-label" style="color:#ec4899">Q LM</span>
-            <canvas class="peq-knob-canvas" id="peq-knob-1" width="80" height="80"></canvas>
-            <span class="peq-knob-val" id="peq-knob-val-1">1.4</span>
+        <div class="modal-body">
+          <div class="fx-preset-row">
+            <label>PRESET</label>
+            <select class="fx-preset-select form-select form-select-sm" id="preset-peq"
+              onchange="applyFxPreset('peq',this.value);this.value=''"></select>
           </div>
-          <div class="peq-knob-wrap">
-            <span class="peq-knob-label" style="color:#f97316">Q MID</span>
-            <canvas class="peq-knob-canvas" id="peq-knob-2" width="80" height="80"></canvas>
-            <span class="peq-knob-val" id="peq-knob-val-2">1.4</span>
+          <div class="fx-toggle">
+            <label class="toggle-switch"><input type="checkbox" id="peq-toggle"
+                onchange="togglePeqEnabled(this.checked)"><span class="toggle-track"></span></label>
+            <span class="fx-toggle-label" id="peq-toggle-label">OFF</span>
           </div>
-          <div class="peq-knob-wrap">
-            <span class="peq-knob-label" style="color:#22c55e">Q HM</span>
-            <canvas class="peq-knob-canvas" id="peq-knob-3" width="80" height="80"></canvas>
-            <span class="peq-knob-val" id="peq-knob-val-3">1.4</span>
+          <div class="fx-modal-content disabled" id="peq-content">
+            <div class="peq-display-wrap" id="peq-display-wrap">
+              <canvas class="peq-canvas" id="peq-canvas"></canvas>
+              <div class="peq-point" data-band="0" id="peq-pt-0">1</div>
+              <div class="peq-point" data-band="1" id="peq-pt-1">2</div>
+              <div class="peq-point" data-band="2" id="peq-pt-2">3</div>
+              <div class="peq-point" data-band="3" id="peq-pt-3">4</div>
+              <div class="peq-point" data-band="4" id="peq-pt-4">5</div>
+            </div>
+            <div class="peq-info-row" id="peq-info-row">
+              <div class="peq-info-item"><span style="color:#a855f7">●</span> LS <span class="peq-info-val"
+                  id="peq-info-0">80Hz 0dB</span></div>
+              <div class="peq-info-item"><span style="color:#ec4899">●</span> LM <span class="peq-info-val"
+                  id="peq-info-1">300Hz 0dB</span></div>
+              <div class="peq-info-item"><span style="color:#f97316">●</span> MID <span class="peq-info-val"
+                  id="peq-info-2">1kHz 0dB</span></div>
+              <div class="peq-info-item"><span style="color:#22c55e">●</span> HM <span class="peq-info-val"
+                  id="peq-info-3">4kHz 0dB</span></div>
+              <div class="peq-info-item"><span style="color:#3b82f6">●</span> HS <span class="peq-info-val"
+                  id="peq-info-4">12kHz 0dB</span></div>
+            </div>
+            <div class="peq-knobs-row">
+              <div class="peq-knob-wrap">
+                <span class="peq-knob-label" style="color:#ec4899">Q LM</span>
+                <canvas class="peq-knob-canvas" id="peq-knob-1" width="80" height="80"></canvas>
+                <span class="peq-knob-val" id="peq-knob-val-1">1.4</span>
+              </div>
+              <div class="peq-knob-wrap">
+                <span class="peq-knob-label" style="color:#f97316">Q MID</span>
+                <canvas class="peq-knob-canvas" id="peq-knob-2" width="80" height="80"></canvas>
+                <span class="peq-knob-val" id="peq-knob-val-2">1.4</span>
+              </div>
+              <div class="peq-knob-wrap">
+                <span class="peq-knob-label" style="color:#22c55e">Q HM</span>
+                <canvas class="peq-knob-canvas" id="peq-knob-3" width="80" height="80"></canvas>
+                <span class="peq-knob-val" id="peq-knob-val-3">1.4</span>
+              </div>
+            </div>
+            <div class="fx-output-control">
+              <label> OUTPUT</label>
+              <input type="range" class="fx-output-slider" id="peq-output-level" min="0" max="300" value="100"
+                oninput="updatePeqOutput()">
+              <span class="fx-output-val" id="peq-output-val">100%</span>
+            </div>
           </div>
-        </div>
-        <div class="fx-output-control">
-          <label> OUTPUT</label>
-          <input type="range" class="fx-output-slider" id="peq-output-level" min="0" max="300" value="100"
-            oninput="updatePeqOutput()">
-          <span class="fx-output-val" id="peq-output-val">100%</span>
         </div>
       </div>
     </div>
-  </div>
-  </div>
   </div>
   <!-- End of second-group-panel -->
 
@@ -2455,8 +2212,9 @@
       <div class="bpm-control">
         BPM
         <input type="number" class="bpm-input" id="bpm-input" value="120" min="20" max="400" title="BPM">
-        <button class="bpm-reset-btn" id="bpm-reset" title="Reset BPM" onclick="resetBpm()"
-          style="font-size: 10px; padding: 2px 4px;">RESET</button>
+        <button class="btn btn-outline-light btn-sm"
+          style="font-size:10px;font-weight:700;letter-spacing:0.5px;padding:2px 8px" id="bpm-reset" title="Reset BPM"
+          onclick="resetBpm()">RESET</button>
       </div>
     </div>
   </div>
@@ -2476,27 +2234,27 @@
       <input type="number" class="range-num-input" id="range-end" value="1" min="1">
       <span class="range-label">End</span>
       <span class="range-info" id="range-info">/ 1 bars</span>
-      <button class="range-all-btn" onclick="resetRange()">RESET</button>
+      <button class="btn btn-outline-light btn-sm"
+        style="font-size:10px;font-weight:700;letter-spacing:0.5px;padding:2px 8px"
+        onclick="resetRange()">RESET</button>
     </div>
   </div>
 
   <!-- FX + Transpose Row -->
-  <div class="fx-transpose-row"
-    style="display: flex; background: var(--bg-card); border-bottom: 1px solid var(--border);">
-    <div class="fx-panel visible" id="fx-panel"
-      style="flex: 1; border-bottom: none; border-right: 1px solid var(--border);">
-      <span class="fx-label" style="font-weight: 700; color: var(--text-muted); font-size: 11px;">FX:</span>
+  <div class="fx-transpose-row">
+    <div class="fx-panel visible" id="fx-panel">
+      <span class="fx-label">FX:</span>
       <div class="fx-chain" id="fx-chain"></div>
     </div>
-    <div class="transport-key" id="transport-key"
-      style="border-top: none; padding: 6px 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+    <div class="transport-key" id="transport-key">
       <span class="transpose-label">Key</span>
       <button class="transpose-btn" onclick="changeTranspose(-1)" title="-1">−</button>
       <input type="number" class="transpose-value" id="transpose-value" value="0" min="-24" max="24" title="Semitones">
       <button class="transpose-btn" onclick="changeTranspose(1)" title="+1">+</button>
       <span class="transpose-key-name" id="transpose-key-name" style="margin-left: 4px;">C</span>
-      <button class="transpose-reset-btn" id="transpose-reset" onclick="resetTranspose()"
-        style="font-size: 10px; padding: 4px 8px;">RESET</button>
+      <button class="btn btn-outline-light btn-sm"
+        style="font-size:10px;font-weight:700;letter-spacing:0.5px;padding:2px 8px" id="transpose-reset"
+        onclick="resetTranspose()">RESET</button>
     </div>
   </div>
 
@@ -2504,6 +2262,20 @@
   <div class="level-meter-panel visible" id="level-meter-panel">
     <div class="level-meter-header">
       <span class="meter-label">L</span>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm" id="meter-band-select"
+          style="width:auto;font-size:10px;padding:2px 24px 2px 6px" onchange="changeMeterBands(this.value)">
+          <option value="10">10 bands</option>
+          <option value="20">20 bands</option>
+          <option value="30">30 bands</option>
+        </select>
+        <div class="form-check form-switch mb-0" style="min-height:auto">
+          <input class="form-check-input" type="checkbox" id="meter-2x-toggle" onchange="toggleMeter2x(this.checked)"
+            style="cursor:pointer">
+          <label class="form-check-label" for="meter-2x-toggle"
+            style="font-size:10px;color:var(--text-muted);cursor:pointer">2x</label>
+        </div>
+      </div>
       <span class="meter-label">R</span>
     </div>
     <canvas class="level-meter-canvas" id="level-meter-canvas"></canvas>
@@ -2520,80 +2292,93 @@
   </div>
 
   <!-- MIDI Export Modal -->
-  <div class="wav-export-overlay" id="midi-export-modal">
-    <div class="wav-export-modal">
-      <button class="close-btn" id="midi-close-btn" onclick="closeMidiModal()">&times;</button>
-      <h3> Export MIDI</h3>
-      <div id="midi-setup">
-        <div class="wav-field">
-          <label> ファイル名</label>
-          <input type="text" id="midi-filename" value="export.mid">
+  <div class="modal fade" id="midi-export-modal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-success"><i class="bi bi-file-earmark-music"></i> Export MIDI</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">
-          ※ ブラウザのダウンロードフォルダに保存されます
-        </div>
-        <div class="fx-toggle"
-          style="justify-content: flex-start; gap: 10px; margin-bottom: 6px; border-bottom: none; padding-bottom: 0;">
-          <label class="toggle-switch"><input type="checkbox" id="midi-export-exclude"><span
-              class="toggle-track"></span></label>
-          <span style="font-size:13px; font-weight:600; color:var(--text);">ミュートされているトラックを除外</span>
-        </div>
-        <div
-          style="font-size:11px;color:var(--text-muted);padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:12px">
-          <div style="margin-bottom:4px;"><strong>オン：</strong>ミュートされていないトラック数でファイルサイズを詰めて書き出します</div>
-          <div><strong>オフ：</strong>元のトラック数や順番の構造を維持し、ミュート部分は無音データとして書き出します</div>
-        </div>
-        <div class="wav-actions">
-          <button class="wav-btn-cancel" onclick="closeMidiModal()">キャンセル</button>
-          <button class="wav-btn-exec" onclick="executeMidiExport()">▶ 実行</button>
+        <div class="modal-body">
+          <div id="midi-setup">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-secondary"> ファイル名</label>
+              <input type="text" class="form-control" id="midi-filename" value="export.mid">
+            </div>
+            <div class="modal-note">
+              ※ ブラウザのダウンロードフォルダに保存されます
+            </div>
+            <div class="fx-toggle"
+              style="justify-content: flex-start; gap: 10px; margin-bottom: 6px; border-bottom: none; padding-bottom: 0;">
+              <label class="toggle-switch"><input type="checkbox" id="midi-export-exclude"><span
+                  class="toggle-track"></span></label>
+              <span class="modal-option-label">ミュートされているトラックを除外</span>
+            </div>
+            <div class="modal-info-box">
+              <div style="margin-bottom:4px;"><strong>オン：</strong>ミュートされていないトラック数でファイルサイズを詰めて書き出します</div>
+              <div><strong>オフ：</strong>元のトラック数や順番の構造を維持し、ミュート部分は無音データとして書き出します</div>
+            </div>
+            <div class="d-flex gap-2 justify-content-end mt-3">
+              <button class="btn btn-outline-secondary" onclick="closeMidiModal()">キャンセル</button>
+              <button class="btn btn-outline-success" onclick="executeMidiExport()"><i class="bi bi-play-fill"></i>
+                実行</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- WAV Export Modal -->
-  <div class="wav-export-overlay" id="wav-export-modal">
-    <div class="wav-export-modal">
-      <button class="close-btn" id="wav-close-btn" onclick="closeWavModal()">&times;</button>
-      <h3> Export WAV</h3>
-      <div id="wav-setup">
-        <div class="wav-field">
-          <label> ファイル名</label>
-          <input type="text" id="wav-filename" value="export.wav">
+  <div class="modal fade" id="wav-export-modal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-info"><i class="bi bi-file-earmark-music-fill"></i> Export WAV</h5>
+          <button type="button" class="btn-close btn-close-white" id="wav-close-btn" data-bs-dismiss="modal"></button>
         </div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">
-          ※ ブラウザのダウンロードフォルダに保存されます
-        </div>
-        <div
-          style="font-size:11px;color:var(--text-muted);padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:12px">
-          FXエフェクトが適用された音源でレンダリングされます
-        </div>
-        <div class="fx-toggle"
-          style="justify-content: flex-start; gap: 10px; margin-bottom: 20px; border-bottom: none; padding-bottom: 0;">
-          <label class="toggle-switch"><input type="checkbox" id="wav-export-tail"><span
-              class="toggle-track"></span></label>
-          <span style="font-size:13px; font-weight:600; color:var(--text);">残響音 (Tail) を含める (約4秒延長)</span>
-        </div>
-        <div class="wav-actions">
-          <button class="wav-btn-cancel" onclick="closeWavModal()">キャンセル</button>
-          <button class="wav-btn-exec" onclick="executeWavExport()">▶ 実行</button>
-        </div>
-      </div>
-      <div id="wav-progress" class="wav-progress-area">
-        <div class="wav-progress-bar">
-          <div class="wav-progress-fill" id="wav-progress-fill"></div>
-        </div>
-        <div class="wav-progress-text" id="wav-progress-text">準備中...</div>
-        <div class="wav-actions" style="margin-top:12px">
-          <button class="wav-btn-cancel" id="wav-cancel-render" onclick="cancelWavExport()">キャンセル</button>
-        </div>
-      </div>
-      <div id="wav-result" class="wav-result">
-        <div class="result-icon"></div>
-        <div class="result-text">ダウンロード完了！</div>
-        <div class="result-filename" id="wav-result-filename"></div>
-        <div class="wav-actions" style="margin-top:12px">
-          <button class="wav-btn-exec" onclick="closeWavModal()">閉じる</button>
+        <div class="modal-body">
+          <div id="wav-setup">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-secondary"> ファイル名</label>
+              <input type="text" class="form-control" id="wav-filename" value="export.wav">
+            </div>
+            <div class="modal-note">
+              ※ ブラウザのダウンロードフォルダに保存されます
+            </div>
+            <div class="modal-info-box">
+              FXエフェクトが適用された音源でレンダリングされます
+            </div>
+            <div class="fx-toggle"
+              style="justify-content: flex-start; gap: 10px; margin-bottom: 20px; border-bottom: none; padding-bottom: 0;">
+              <label class="toggle-switch"><input type="checkbox" id="wav-export-tail"><span
+                  class="toggle-track"></span></label>
+              <span class="modal-option-label">残響音 (Tail) を含める (約4秒延長)</span>
+            </div>
+            <div class="d-flex gap-2 justify-content-end">
+              <button class="btn btn-outline-secondary" onclick="closeWavModal()">キャンセル</button>
+              <button class="btn btn-outline-info" onclick="executeWavExport()"><i class="bi bi-play-fill"></i>
+                実行</button>
+            </div>
+          </div>
+          <div id="wav-progress" class="wav-progress-area">
+            <div class="wav-progress-bar">
+              <div class="wav-progress-fill" id="wav-progress-fill"></div>
+            </div>
+            <div class="wav-progress-text" id="wav-progress-text">準備中...</div>
+            <div class="d-flex justify-content-end mt-2">
+              <button class="btn btn-outline-secondary btn-sm" id="wav-cancel-render"
+                onclick="cancelWavExport()">キャンセル</button>
+            </div>
+          </div>
+          <div id="wav-result" class="wav-result">
+            <div class="result-icon"></div>
+            <div class="result-text">ダウンロード完了！</div>
+            <div class="result-filename" id="wav-result-filename"></div>
+            <div class="d-flex justify-content-end mt-2">
+              <button class="btn btn-outline-info" onclick="closeWavModal()">閉じる</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2605,18 +2390,22 @@
   </div>
 
   <div class="loading-overlay" id="loading">
-    <div style="text-align:center">
+    <div class="text-center">
       <div class="spinner"></div>
-      <div id="loading-text" style="color:var(--text-muted);margin-top:16px;font-size:14px;"></div>
+      <div id="loading-text" class="loading-text"></div>
     </div>
   </div>
 
+  <!-- Bootstrap 5.3.8 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/midi-parser-js@4.0.4/src/main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
   <script>
     // ===== Help Modal =====
     function toggleHelp() {
-      document.getElementById('help-modal').classList.toggle('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('help-modal')).toggle();
     }
 
     // ===== State =====
@@ -3037,7 +2826,6 @@
       if (!mergeMode) {
         // BPM input
         document.getElementById('bpm-input').value = originalBpm;
-        document.getElementById('bpm-reset').classList.remove('visible');
         document.getElementById('bpm-input').classList.remove('overridden');
 
         // Time signature display
@@ -3312,7 +3100,6 @@
       const bpmInput = document.getElementById('bpm-input');
       const bpmReset = document.getElementById('bpm-reset');
       bpmInput.classList.toggle('overridden', bpmOverridden);
-      bpmReset.classList.toggle('visible', bpmOverridden);
 
       const wasPlaying = isPlaying;
       if (wasPlaying) stopPlayback();
@@ -4196,6 +3983,9 @@
       noteBtn.id = 'btn-note';
       noteBtn.style.cursor = 'pointer';
       noteBtn.innerHTML = ' NOTE';
+      noteBtn.setAttribute('data-bs-toggle', 'tooltip');
+      noteBtn.setAttribute('data-bs-placement', 'bottom');
+      noteBtn.setAttribute('title', 'クリックで設定画面を開く（固定位置・移動不可）');
       noteBtn.addEventListener('click', () => toggleNoteModal());
       container.appendChild(noteBtn);
 
@@ -4216,6 +4006,9 @@
         btn.draggable = true;
         btn.setAttribute('data-fx-id', id);
         btn.innerHTML = `${info.emoji} ${info.label}`;
+        btn.setAttribute('data-bs-toggle', 'tooltip');
+        btn.setAttribute('data-bs-placement', 'bottom');
+        btn.setAttribute('title', `${info.label}：クリックで設定 / ドラッグで順番を変更`);
         btn.addEventListener('click', () => eval(info.onClick));
 
         // Drag events
@@ -4239,6 +4032,9 @@
       peqBtn.id = 'btn-peq';
       peqBtn.style.cursor = 'pointer';
       peqBtn.innerHTML = ' PEQ';
+      peqBtn.setAttribute('data-bs-toggle', 'tooltip');
+      peqBtn.setAttribute('data-bs-placement', 'bottom');
+      peqBtn.setAttribute('title', 'クリックで設定画面を開く（固定位置・移動不可）');
       peqBtn.addEventListener('click', () => togglePeqModal());
       container.appendChild(peqBtn);
 
@@ -4300,6 +4096,13 @@
       container.appendChild(masterOutContainer);
 
       updateFxButtonStates();
+
+      // Initialize Bootstrap tooltips for FX buttons
+      document.querySelectorAll('.fx-btn[data-bs-toggle="tooltip"]').forEach(el => {
+        const existing = bootstrap.Tooltip.getInstance(el);
+        if (existing) existing.dispose();
+        new bootstrap.Tooltip(el, { trigger: 'hover', delay: { show: 400, hide: 100 } });
+      });
     }
 
     let draggedFxId = null;
@@ -4612,19 +4415,19 @@
 
     // ===== FX Modal Toggles =====
     function toggleNoteModal() {
-      document.getElementById('note-modal').classList.toggle('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('note-modal')).toggle();
     }
     function toggleEqModal() {
-      document.getElementById('eq-modal').classList.toggle('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('eq-modal')).toggle();
     }
     function toggleRoomModal() {
-      document.getElementById('room-modal').classList.toggle('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('room-modal')).toggle();
     }
     function toggleChorusModal() {
-      document.getElementById('chorus-modal').classList.toggle('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('chorus-modal')).toggle();
     }
     function toggleDynamicsModal() {
-      document.getElementById('dynamics-modal').classList.toggle('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('dynamics-modal')).toggle();
     }
 
     // ===== FX Output Level =====
@@ -4839,15 +4642,17 @@
     }
 
     function togglePeqModal() {
-      const modal = document.getElementById('peq-modal');
-      modal.classList.toggle('visible');
-      if (modal.classList.contains('visible')) {
-        initPeqCanvas();
-        startPeqAnimation();
-      } else {
-        if (peqAnimId) { cancelAnimationFrame(peqAnimId); peqAnimId = null; }
-      }
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('peq-modal')).toggle();
     }
+
+    // PEQ modal needs canvas init after shown
+    document.getElementById('peq-modal').addEventListener('shown.bs.modal', () => {
+      initPeqCanvas();
+      startPeqAnimation();
+    });
+    document.getElementById('peq-modal').addEventListener('hidden.bs.modal', () => {
+      if (peqAnimId) { cancelAnimationFrame(peqAnimId); peqAnimId = null; }
+    });
 
     function initPeqCanvas() {
       const wrap = document.getElementById('peq-display-wrap');
@@ -5475,11 +5280,11 @@
       const baseName = midiFileName.replace(/\.(mid|midi)$/i, '');
       document.getElementById('midi-filename').value = `${baseName}_export.mid`;
       document.getElementById('midi-export-exclude').checked = false; // default: preserve structure
-      document.getElementById('midi-export-modal').classList.add('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('midi-export-modal')).show();
     }
 
     function closeMidiModal() {
-      document.getElementById('midi-export-modal').classList.remove('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('midi-export-modal')).hide();
     }
 
     function executeMidiExport() {
@@ -5795,12 +5600,12 @@
       wavExportCancelled = false;
 
       // Show modal
-      document.getElementById('wav-export-modal').classList.add('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('wav-export-modal')).show();
     }
 
     function closeWavModal() {
       wavExportCancelled = true;
-      document.getElementById('wav-export-modal').classList.remove('visible');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('wav-export-modal')).hide();
     }
 
     function cancelWavExport() {
@@ -6315,37 +6120,60 @@
     let meterPeaks = { L: new Float32Array(10), R: new Float32Array(10) };
     let meterPeakDecay = 0.015;
     let meterBarDecay = 0.88;
+    let meterBandCount = 10;
     let meterLevels = { L: new Float32Array(10), R: new Float32Array(10) };
 
-    const METER_BANDS = [
-      { lo: 20, hi: 60 },    // Sub Bass
-      { lo: 60, hi: 150 },   // Bass
-      { lo: 150, hi: 400 },   // Low Mid
-      { lo: 400, hi: 800 },   // Mid
-      { lo: 800, hi: 1600 },  // Upper Mid
-      { lo: 1600, hi: 3200 },  // Presence
-      { lo: 3200, hi: 5000 },  // Brilliance
-      { lo: 5000, hi: 8000 },  // High
-      { lo: 8000, hi: 13000 }, // Very High
-      { lo: 13000, hi: 20000 } // Air
-    ];
+    // Generate logarithmically spaced frequency bands
+    function generateMeterBands(n) {
+      const bands = [];
+      const labels = [];
+      const compensation = [];
+      const logMin = Math.log10(20);
+      const logMax = Math.log10(20000);
+      const step = (logMax - logMin) / n;
 
-    const METER_LABELS = ['60', '150', '400', '800', '1.6k', '3.2k', '5k', '8k', '13k', '20k'];
+      for (let i = 0; i < n; i++) {
+        const lo = Math.pow(10, logMin + step * i);
+        const hi = Math.pow(10, logMin + step * (i + 1));
+        bands.push({ lo, hi });
 
-    // Per-band slope compensation (+3dB/octave from 100Hz reference) to balance visual levels
-    // This compensates for the natural roll-off of audio energy at higher frequencies
-    const METER_COMPENSATION = [
-      0,    // 20-60Hz
-      0,    // 60-150Hz (reference)
-      3,    // 150-400Hz
-      6,    // 400-800Hz
-      9,    // 800-1.6kHz
-      12,   // 1.6k-3.2kHz
-      15,   // 3.2k-5kHz
-      18,   // 5k-8kHz
-      21,   // 8k-13kHz
-      24    // 13k-20kHz
-    ];
+        // Label: use the upper frequency
+        const freq = hi;
+        if (freq >= 1000) {
+          labels.push((freq / 1000).toFixed(freq >= 10000 ? 0 : 1) + 'k');
+        } else {
+          labels.push(Math.round(freq).toString());
+        }
+
+        // Compensation: +3dB per octave from 100Hz reference
+        const centerFreq = Math.sqrt(lo * hi);
+        const octavesAbove100 = Math.log2(centerFreq / 100);
+        compensation.push(Math.max(0, octavesAbove100 * 3));
+      }
+      return { bands, labels, compensation };
+    }
+
+    let meterData = generateMeterBands(10);
+    let METER_BANDS = meterData.bands;
+    let METER_LABELS = meterData.labels;
+    let METER_COMPENSATION = meterData.compensation;
+
+    function changeMeterBands(n) {
+      meterBandCount = parseInt(n);
+      meterData = generateMeterBands(meterBandCount);
+      METER_BANDS = meterData.bands;
+      METER_LABELS = meterData.labels;
+      METER_COMPENSATION = meterData.compensation;
+      meterLevels = { L: new Float32Array(meterBandCount), R: new Float32Array(meterBandCount) };
+      meterPeaks = { L: new Float32Array(meterBandCount), R: new Float32Array(meterBandCount) };
+    }
+
+    function toggleMeter2x(on) {
+      const canvas = document.getElementById('level-meter-canvas');
+      if (canvas) {
+        canvas.style.height = on ? '128px' : '64px';
+      }
+    }
 
     function setupLevelMeter() {
       if (!audioCtx) return;
@@ -6445,6 +6273,9 @@
       return peak;
     }
 
+    let _refLabelBands = 0;
+    let _refMap = [];
+
     function drawLevelMeter(canvas) {
       if (!meterAnalyserL || !meterAnalyserR) return;
 
@@ -6473,7 +6304,7 @@
       const sideGap = 6; // gap between L and R halves
       const halfW = (W - sideGap) / 2;
       const bandW = (halfW - gap * (numBands + 1)) / numBands;
-      const maxBarH = H - 18; // leave room for labels
+      const maxBarH = H - 22; // leave room for labels
       const topPad = 2;
 
       // dB range: narrower range for better visual sensitivity
@@ -6554,11 +6385,33 @@
             ctx.fillRect(x, peakY, bandW, 2);
           }
 
-          // Band label
-          ctx.fillStyle = '#555570';
-          ctx.font = '7px Courier New';
-          ctx.textAlign = 'center';
-          ctx.fillText(METER_LABELS[b], x + bandW / 2, H - 2);
+          // Band label: always show 10-band reference frequencies
+          if (!_refLabelBands || _refLabelBands !== numBands) {
+            const refFreqs = [60, 150, 400, 800, 1600, 3200, 5000, 8000, 13000, 20000];
+            const refLabels = ['60', '150', '400', '800', '1.6k', '3.2k', '5k', '8k', '13k', '20k'];
+            _refMap = [];
+            _refLabelBands = numBands;
+            for (let r = 0; r < refFreqs.length; r++) {
+              let bestIdx = 0, bestDist = Infinity;
+              for (let bi = 0; bi < numBands; bi++) {
+                const center = Math.sqrt(METER_BANDS[bi].lo * METER_BANDS[bi].hi);
+                const dist = Math.abs(Math.log10(center) - Math.log10(refFreqs[r]));
+                if (dist < bestDist) { bestDist = dist; bestIdx = bi; }
+              }
+              _refMap.push({ idx: bestIdx, label: refLabels[r] });
+            }
+            // deduplicate (same band index)
+            const seen = new Set();
+            _refMap = _refMap.filter(m => { if (seen.has(m.idx)) return false; seen.add(m.idx); return true; });
+          }
+          const refEntry = _refMap.find(m => m.idx === b);
+          if (refEntry) {
+            const labelFontSize = numBands <= 10 ? 10 : 8;
+            ctx.fillStyle = '#7777aa';
+            ctx.font = `${labelFontSize}px Courier New`;
+            ctx.textAlign = 'center';
+            ctx.fillText(refEntry.label, x + bandW / 2, H - 3);
+          }
         }
       }
 
